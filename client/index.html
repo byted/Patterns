@@ -250,9 +250,10 @@ button { position: absolute; }
 						el.removeClass('vis');
 						setTimeout(function () {
 							el.attr('id', newCards[i])
-							.empty()
-							.append(buildSymbol(newCards[i]))
-							.addClass('vis');
+								.children('.content')
+								.empty()
+								.append(buildSymbol(newCards[i]));
+							el.addClass('vis');
 						}, 500);
 							
 					});
