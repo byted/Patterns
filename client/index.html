@@ -28,7 +28,6 @@
 }
 /*---*/
 body { margin: 0; }
-button { position: absolute; }
 
 #board { 
 	width: 100vmin; height: 100vmin; 
@@ -133,7 +132,6 @@ button { position: absolute; }
 	</style>
 </head>
 <body>
-	<button id="solve">Solve</button>
 	<div id="board" style="display:none">
 		<div class="card"><div class="content"></div></div>
 		<div class="card"><div class="content"></div></div>
@@ -170,13 +168,16 @@ button { position: absolute; }
 				try{
 					var data = JSON.parse(json);
 					if(data.success) { 
-						enterSolutionMode(data.countdown);
-					} else { console.log('Couldn\'t block'); }	
+						startTurn(data.countdown);
+					} else {
+						endTurn();
+						console.log('Couldn\'t block. It is someones elses turn.');
+					}
 				} catch(e) {}
 			});
 
 			socket.on('solution_response', function (json) {
-				leaveSolutionMode();
+				endTurn();
 				try {
 					var data = JSON.parse(json);
 					if(data.correct) {
@@ -193,7 +194,6 @@ button { position: absolute; }
 						console.log(data.error);
 						// do some more UI stuff to give the user some feedback
 					}
-					$('.card.selected').removeClass('selected');
 				} catch(e) {console.log(e); }
 			});
 
@@ -216,6 +216,12 @@ button { position: absolute; }
 				var cardContainerEl = $('<div class="card" id="' + card.cid + '"></div>'),
 					cardContentEl = $('<div class="content"></div>');
 				
+				cardContainerEl.click(function (e) {
+						if(!ourTurn) { askForTurn() }
+						$(this).toggleClass('selected');
+						checkAndSendSolution('.selected');
+					});
+
 				for (var i = card.count - 1; i >= 0; i--) {
 					cardContentEl.append(buildSymbol(card));
 				};
@@ -260,29 +266,24 @@ button { position: absolute; }
 				}	
 			}
 
-			function enterSolutionMode(time) {
-				ourTurn = true;
-				$('.card').click(function (e) {
-					$(this).toggleClass('selected');
-					checkAndSendSolution('.selected');
-				});
-
-				$('#solve').text('remaining time: ' + time);
-				// set interval to countdown time on button
+			function startTurn(secondsToGo) {
+				ourTurn = true
+				// set timer
 			}
 
-			function leaveSolutionMode() {
+			function endTurn() {
 				ourTurn = false;
-				$('.card').unbind('click');
-				$('#solve').text('Solve');
+				$('.card.selected').removeClass('selected');
 			}
 
 			function checkAndSendSolution(selector) {
-					var selected = $(selector);
-					if(ourTurn && selected.length === 3) {
+				var selected = $(selector);
+				if(selected.length === 3) {
+					if(ourTurn) {
 						console.log('3 cards selected -> send solution');
 						sendSolution([selected[0].id, selected[1].id, selected[2].id]);
-					}
+					} else { console.log('Can not send. It is not our turn!'); }
+				}
 			}
 
 			function sendSolution(cids) {
@@ -293,16 +294,11 @@ button { position: absolute; }
 				} catch(e) { console.log('Couldn\'t send solution'); }
 			}
 
-			function sendSolutionBlock() {
+			function askForTurn() {
 				try {
 					socket.emit('solution_block');
-				} catch(e) {}
+				} catch(e) { console.log('Couldn\'t send request for solution block'); }
 			}
-
-			$('#solve').click(function () {
-				sendSolutionBlock();
-			});
-			
 		});
 	</script>
 </body>
