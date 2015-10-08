@@ -249,7 +249,7 @@ button { position: absolute; }
 						var el = $('#' + cid);
 						el.removeClass('vis');
 						setTimeout(function () {
-							el.attr('id', newCards[i])
+							el.attr('id', newCards[i].cid)
 								.children('.content')
 								.empty()
 								.append(buildSymbol(newCards[i]));
