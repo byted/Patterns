@@ -29,6 +29,22 @@
 /*---*/
 body { margin: 0; }
 
+#countdown {
+    position: absolute;
+    width: 4em;
+    padding: 5px 0;
+    margin: 0 auto;
+    top: 5px;
+    right: 0;
+    left: 0;
+    background-color: #4C4C4C;
+    text-align: center;
+    color: #fff;
+    border-radius: 15px;
+    font-family: Arial, sans-serif;
+    z-index: 255;
+}
+
 #board { 
 	width: 100vmin; height: 100vmin; 
 	display: flex;
@@ -132,6 +148,7 @@ body { margin: 0; }
 	</style>
 </head>
 <body>
+	<div id="countdown" style="display: none"></div>
 	<div id="board" style="display:none">
 		<div class="card"><div class="content"></div></div>
 		<div class="card"><div class="content"></div></div>
@@ -266,9 +283,21 @@ body { margin: 0; }
 				}	
 			}
 
-			function startTurn(secondsToGo) {
+			function startTurn(milisecondsToGo) {
 				ourTurn = true
 				// set timer
+				var countEl = $('#countdown')
+				var timer = setInterval(function(){
+					var oldValue = parseFloat(countEl.html());
+					if(oldValue > 0.1) {
+						countEl.html((oldValue - 0.1).toFixed(1));
+					} else {
+						clearInterval(timer);
+						countEl.hide();
+					}
+				}, 100);
+				countEl.html(milisecondsToGo / 1000);
+				countEl.show();
 			}
 
 			function endTurn() {
