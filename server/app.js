@@ -50,6 +50,8 @@ function Session() {
 	this.activePlayer;
 	this.board = createBoard();
 	this.players = {};
+	this.turnTimeout = 3000;
+	this.timeout = null;
 
 	function createBoard() {
 		var c = {};
@@ -107,15 +109,23 @@ Session.prototype.replaceCardsWithRandom = function(cids) {
 
 	return [card1, card2, card3];
 }
-Session.prototype.blockFor = function (pid) {
+Session.prototype.turnFor = function (pid) {
 	if(this.status !== 'active') {
 		throw new Error('session already blocked');
 	}
-	this.status = 'blocked';
 	this.activePlayer = pid;
+	this.status = 'blocked';
+	console.log('Turn: ' + pid);
+	var that = this;
+	this.timeout = setTimeout(function () {
+		that.turnEnd('countdown');
+	}, this.turnTimeout);
+
 }
-Session.prototype.unblock = function () {
+Session.prototype.turnEnd = function (reason) {
 	this.status = 'active';
+	clearTimeout(this.timeout);
+	console.log('Turn end: ' + this.activePlayer + ' (' + reason + ')');
 	this.activePlayer = null;
 }
 
@@ -140,10 +150,11 @@ io.on('connection', function(socket){
 	socket.on('solution_block', function () {
 		var msg;
 		try {
-			session.blockFor(socket.id);
-			msg = { success: true, countdown: 5000 };
+			session.turnFor(socket.id);
+			msg = { success: true, countdown: session.turnTimeout };
 		} catch(e) {
 			msg = { success: false };
+			console.log(e);
 		}
 		socket.emit('solution_block_response', JSON.stringify(msg));
 		// for now, don't inform other players about the block
@@ -162,7 +173,7 @@ io.on('connection', function(socket){
 			}));
 		}
 		else if(session.isSolution(solutionCids)) {
-			console.log("Solution is correct!")
+			reason = 'SolutionCorrect';
 			var newCards = session.replaceCardsWithRandom(solutionCids);
 			//needs a check if this has worked!
 
@@ -178,13 +189,13 @@ io.on('connection', function(socket){
 			}));
 		}
 		else {
-			console.log("Solution is wrong!")
+			reason = 'SolutionWrong';
 			socket.emit('solution_response',JSON.stringify({
 				correct: false,
 				error: 'just_wrong'
 			}));
 		}
-		session.unblock();
+		session.turnEnd(reason);
 	});
 
 	socket.on('disconnect', function () {

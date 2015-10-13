@@ -172,6 +172,7 @@ body { margin: 0; }
 			var socket = io();
 			var board;
 			var ourTurn = false;
+			var timer = null;
 
 			socket.on('joined', function (json) {
 				try {
@@ -187,17 +188,16 @@ body { margin: 0; }
 					if(data.success) { 
 						startTurn(data.countdown);
 					} else {
-						endTurn();
-						console.log('Couldn\'t block. It is someones elses turn.');
+						endTurn('alreadyBlocked');
 					}
 				} catch(e) {}
 			});
 
 			socket.on('solution_response', function (json) {
-				endTurn();
 				try {
 					var data = JSON.parse(json);
 					if(data.correct) {
+						reason = 'correctSolution';
 						//handle correct solution
 						data.oldCardsCids.forEach(function (cid) {
 							delete board[cid];
@@ -208,9 +208,11 @@ body { margin: 0; }
 						renderUpdate(data.oldCardsCids, data.newCards);
 
 					} else {
+						reason = 'badSolution';
 						console.log(data.error);
 						// do some more UI stuff to give the user some feedback
 					}
+					endTurn(reason);
 				} catch(e) {console.log(e); }
 			});
 
@@ -287,20 +289,22 @@ body { margin: 0; }
 				ourTurn = true
 				// set timer
 				var countEl = $('#countdown')
-				var timer = setInterval(function(){
+				timer = setInterval(function(){
 					var oldValue = parseFloat(countEl.html());
 					if(oldValue > 0.1) {
 						countEl.html((oldValue - 0.1).toFixed(1));
 					} else {
-						clearInterval(timer);
-						countEl.hide();
+						endTurn('countdown');
 					}
 				}, 100);
 				countEl.html(milisecondsToGo / 1000);
 				countEl.show();
 			}
 
-			function endTurn() {
+			function endTurn(reason) {
+				console.log('End of turn: ' + reason)
+				clearInterval(timer);
+				$('#countdown').hide();
 				ourTurn = false;
 				$('.card.selected').removeClass('selected');
 			}
