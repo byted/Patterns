@@ -84,15 +84,21 @@ Session.prototype.isSolution = function (cids) {
 		return false;
 	}
 }
-Session.prototype.addPlayer = function (socket) {
+Session.prototype.addPlayer = function(socket) {
 	var p = new Player(socket);
 	this.players[socket.id] = p;
 	return p
 }
-Session.prototype.removePlayer = function (pid) {
+Session.prototype.removePlayer = function(pid) {
 	try { delete this.player[pid]; }
 	catch (e) { return false; }
 	return true;
+}
+Session.prototype.pointsForActivePlayer = function(pointsDelta) {
+	if(pointsDelta) {
+		this.players[this.activePlayer].points += pointsDelta
+	}
+	return this.players[this.activePlayer].points
 }
 Session.prototype.replaceCardsWithRandom = function(cids) {
 	//delete cards from solution
@@ -118,15 +124,17 @@ Session.prototype.turnFor = function (pid) {
 	console.log('Turn: ' + pid);
 	var that = this;
 	this.timeout = setTimeout(function () {
-		that.turnEnd('countdown');
+		that.turnEnd('countdown', 0);
 	}, this.turnTimeout);
 
 }
-Session.prototype.turnEnd = function (reason) {
+Session.prototype.turnEnd = function (reason, pointsDelta) {
 	this.status = 'active';
 	clearTimeout(this.timeout);
 	console.log('Turn end: ' + this.activePlayer + ' (' + reason + ')');
+	points = this.pointsForActivePlayer(pointsDelta);
 	this.activePlayer = null;
+	return points
 }
 
 //--------
@@ -140,7 +148,7 @@ io.on('connection', function(socket){
 		session = new Session();
 	}
 	socket.join(session.sid);
-	session.addPlayer(socket.id);
+	session.addPlayer(socket);
 
 	socket.emit('joined', JSON.stringify({
 		board: session.board,
@@ -164,7 +172,6 @@ io.on('connection', function(socket){
 		console.log('Got solution:');
 		var solution = JSON.parse(data);
 		console.log(solution);
-		//var sid = solution.sid;
 		var solutionCids = solution.cids;
 		if(session.status !== 'blocked' || session.activePlayer !== socket.id) {
 			socket.emit('solution_response',JSON.stringify({
@@ -173,7 +180,7 @@ io.on('connection', function(socket){
 			}));
 		}
 		else if(session.isSolution(solutionCids)) {
-			reason = 'SolutionCorrect';
+			points = session.turnEnd('SolutionCorrect', 1);
 			var newCards = session.replaceCardsWithRandom(solutionCids);
 			//needs a check if this has worked!
 
@@ -181,6 +188,7 @@ io.on('connection', function(socket){
 				correct: true,
 				oldCardsCids: solutionCids,
 				newCards: newCards,
+				points: points
 			}));
 
 			socket.broadcast.emit('solution_found', JSON.stringify({
@@ -189,13 +197,13 @@ io.on('connection', function(socket){
 			}));
 		}
 		else {
-			reason = 'SolutionWrong';
+			points = session.turnEnd('SolutionWrong', -3);
 			socket.emit('solution_response',JSON.stringify({
 				correct: false,
-				error: 'just_wrong'
+				error: 'just_wrong',
+				points: points
 			}));
 		}
-		session.turnEnd(reason);
 	});
 
 	socket.on('disconnect', function () {
