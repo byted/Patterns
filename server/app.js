@@ -32,7 +32,11 @@ function getRandomInt(min, max) {
 function Player(socket) {
 	this.pid = socket.id;
 	this.name = socket.id;
-	this.points = 0;
+	this.stats = {
+		points: 0,
+		badAttempts: 0,
+		goodAttempts: 0
+	};
 	this.socket = socket;
 }
 //Card
@@ -94,11 +98,16 @@ Session.prototype.removePlayer = function(pid) {
 	catch (e) { return false; }
 	return true;
 }
-Session.prototype.pointsForActivePlayer = function(pointsDelta) {
-	if(pointsDelta) {
-		this.players[this.activePlayer].points += pointsDelta
+Session.prototype.updateScoreForActivePlayer = function(reason) {
+	var stats = this.players[this.activePlayer].stats;
+	if(reason === 'good solution') {
+		stats.points += 1;
+		stats.goodAttempts += 1;
+	} else if (reason === 'bad solution' || reason === 'countdown') {
+		stats.points += -3;
+		stats.badAttempts += 1
 	}
-	return this.players[this.activePlayer].points
+	return stats
 }
 Session.prototype.replaceCardsWithRandom = function(cids) {
 	//delete cards from solution
@@ -124,15 +133,15 @@ Session.prototype.turnFor = function (pid) {
 	console.log('Turn: ' + pid);
 	var that = this;
 	this.timeout = setTimeout(function () {
-		that.turnEnd('countdown', 0);
+		that.turnEnd('countdown');
 	}, this.turnTimeout);
 
 }
-Session.prototype.turnEnd = function (reason, pointsDelta) {
+Session.prototype.turnEnd = function (reason) {
 	this.status = 'active';
 	clearTimeout(this.timeout);
+	points = this.updateScoreForActivePlayer(reason);
 	console.log('Turn end: ' + this.activePlayer + ' (' + reason + ')');
-	points = this.pointsForActivePlayer(pointsDelta);
 	this.activePlayer = null;
 	return points
 }
@@ -180,7 +189,7 @@ io.on('connection', function(socket){
 			}));
 		}
 		else if(session.isSolution(solutionCids)) {
-			points = session.turnEnd('SolutionCorrect', 1);
+			stats = session.turnEnd('good solution');
 			var newCards = session.replaceCardsWithRandom(solutionCids);
 			//needs a check if this has worked!
 
@@ -188,7 +197,7 @@ io.on('connection', function(socket){
 				correct: true,
 				oldCardsCids: solutionCids,
 				newCards: newCards,
-				points: points
+				stats: stats
 			}));
 
 			socket.broadcast.emit('solution_found', JSON.stringify({
@@ -197,11 +206,11 @@ io.on('connection', function(socket){
 			}));
 		}
 		else {
-			points = session.turnEnd('SolutionWrong', -3);
+			stats = session.turnEnd('bad solution');
 			socket.emit('solution_response',JSON.stringify({
 				correct: false,
 				error: 'just_wrong',
-				points: points
+				stats: stats
 			}));
 		}
 	});
