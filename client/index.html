@@ -59,6 +59,10 @@ label {
 #points {
 }
 
+#stats {
+	display: flex;
+	flex-direction: column;
+}
 #board { 
 	width: 100vmin; height: 100vmin; 
 	display: flex;
@@ -154,7 +158,7 @@ label {
 	</style>
 </head>
 <body>
-	<div id="board" style="display:none">
+	<div id="board" class="invisvible">
 		<div class="card"><div class="content"></div></div>
 		<div class="card"><div class="content"></div></div>
 		<div class="card"><div class="content"></div></div>
@@ -167,6 +171,13 @@ label {
 		<div class="card"><div class="content"></div></div>
 		<div class="card"><div class="content"></div></div>
 		<div class="card"><div class="content"></div></div>
+	</div>
+	<div id="stats">
+		<div id="countdown" class="invisvible"></div>
+		<div><label>Points:</label><span id="points">0</span></div>
+		<div><label>Failures:</label><span id="badAttempts">0</span></div>
+		<div><label>Successes:</label><span id="goodAttempts">0</span></div>
+		<div><label>Cards left:</label><span id="cardsLeft">0</span></div>
 	</div>
 
   	<!-- JS -->
@@ -201,7 +212,6 @@ label {
 			socket.on('solution_response', function (json) {
 				try {
 					var data = JSON.parse(json);
-					console.log(data);
 					if(data.correct) {
 						reason = 'good solution';
 						//handle correct solution
@@ -211,14 +221,14 @@ label {
 						data.newCards.forEach(function (card) {
 							board[card.cid] = card;
 						});
-						renderUpdate(data.oldCardsCids, data.newCards);
+						renderBoardUpdate(data.oldCardsCids, data.newCards);
 
 					} else {
 						reason = 'bad solution';
 						console.log(data.error);
 						// do some more UI stuff to give the user some feedback
 					}
-					$('#points').html(data.points);
+					renderStatsUpdate(data.stats);
 					endTurn(reason);
 				} catch(e) {console.log(e); }
 			});
@@ -233,7 +243,7 @@ label {
 					data.newCards.forEach(function (card) {
 						board[card.cid] = card;
 					});
-					renderUpdate(data.oldCardsCids, data.newCards);
+					renderBoardUpdate(data.oldCardsCids, data.newCards);
 					$('.card.selected').removeClass('selected');
 				} catch(e) {console.log(e); }
 			});
@@ -269,7 +279,7 @@ label {
 				$('.card').addClass('blendIn');
 			}
 
-			function renderUpdate(oldCardsCids, newCards) {
+			function renderBoardUpdate(oldCardsCids, newCards) {
 				if(!oldCardsCids) {
 					//only add new ones
 				} else if(!newCards) {
@@ -290,6 +300,12 @@ label {
 							
 					});
 				}	
+			}
+
+			function renderStatsUpdate(stats) {
+				$('#points').html(stats.points);
+				$('#goodAttempts').html(stats.goodAttempts);
+				$('#badAttempts').html(stats.badAttempts);
 			}
 
 			function startTurn(milisecondsToGo) {
