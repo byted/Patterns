@@ -26,27 +26,37 @@
         opacity:0
     }
 }
+.blendOut {
+	opacity: 0;
+	transition: opacity .5s ease-in-out;
+	animation: hide .5s;
+	animation-fill-mode: both;
+}
+.blendIn {
+	animation:show .5s;
+    animation-fill-mode:both
+}
+.invisvible {
+	visibility: hidden;
+}
+
 /*---*/
-body { margin: 0; }
+body {
+	margin: 0;
+	display: flex;
+    flex-direction: row;
+    font-family: Arial, sans-serif;
+}
+label {
+    margin-right: .4em;
+}
 
 #countdown {
-    position: absolute;
-    width: 4em;
-    padding: 5px 0;
-    margin: 0 auto;
-    top: 5px;
-    right: 0;
-    left: 0;
-    background-color: #4C4C4C;
-    text-align: center;
-    color: #fff;
-    border-radius: 15px;
-    font-family: Arial, sans-serif;
-    z-index: 255;
+	height: 2em;
+	margin: 0 auto;
 }
 
 #points {
-	position: absolute;
 }
 
 #board { 
@@ -63,10 +73,6 @@ body { margin: 0; }
 	box-shadow: 0 0 2px;
 	margin: 5px;
 	float: left;
-	opacity: 0;
-	transition: opacity .5s ease-in-out;
-	animation: hide .5s;
-	animation-fill-mode: both;
 	position: relative;
 	width: 20%;
 }
@@ -77,10 +83,6 @@ body { margin: 0; }
 	}
 .card.selected {
 	border-color: black;
-}
-.card.vis {
-	animation:show .5s;
-    animation-fill-mode:both
 }
 
 .card > .content {
@@ -152,8 +154,6 @@ body { margin: 0; }
 	</style>
 </head>
 <body>
-	<div id="countdown" style="display: none"></div>
-	<div id="points"></div>
 	<div id="board" style="display:none">
 		<div class="card"><div class="content"></div></div>
 		<div class="card"><div class="content"></div></div>
@@ -201,8 +201,9 @@ body { margin: 0; }
 			socket.on('solution_response', function (json) {
 				try {
 					var data = JSON.parse(json);
+					console.log(data);
 					if(data.correct) {
-						reason = 'correctSolution';
+						reason = 'good solution';
 						//handle correct solution
 						data.oldCardsCids.forEach(function (cid) {
 							delete board[cid];
@@ -213,7 +214,7 @@ body { margin: 0; }
 						renderUpdate(data.oldCardsCids, data.newCards);
 
 					} else {
-						reason = 'badSolution';
+						reason = 'bad solution';
 						console.log(data.error);
 						// do some more UI stuff to give the user some feedback
 					}
@@ -264,9 +265,8 @@ body { margin: 0; }
 				Object.keys(board).forEach(function (cid) {
 					boardEl.append(buildCard(board[cid]));
 				});
-				boardEl.show();
-
-				$('.card').addClass('vis');
+				$('#board').removeClass('invisvible');
+				$('.card').addClass('blendIn');
 			}
 
 			function renderUpdate(oldCardsCids, newCards) {
@@ -278,13 +278,14 @@ body { margin: 0; }
 					//update inplace
 					oldCardsCids.forEach(function (cid, i) {
 						var el = $('#' + cid);
-						el.removeClass('vis');
+						el.removeClass('blendIn');
+						el.addClass('blendOut');
 						setTimeout(function () {
 							el.attr('id', newCards[i].cid)
 								.children('.content')
 								.empty()
 								.append(buildSymbol(newCards[i]));
-							el.addClass('vis');
+							el.addClass('blendIn');
 						}, 500);
 							
 					});
@@ -304,13 +305,13 @@ body { margin: 0; }
 					}
 				}, 100);
 				countEl.html(milisecondsToGo / 1000);
-				countEl.show();
+				countEl.removeClass('invisvible');
 			}
 
 			function endTurn(reason) {
 				console.log('End of turn: ' + reason)
 				clearInterval(timer);
-				$('#countdown').hide();
+				$('#countdown').addClass('invisvible');
 				ourTurn = false;
 				$('.card.selected').removeClass('selected');
 			}
