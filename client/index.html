@@ -66,7 +66,7 @@ label {
 #board { 
 	width: 100vmin; height: 100vmin; 
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	flex-wrap: wrap;
 	align-content: center;
 	justify-content: center;
@@ -178,6 +178,7 @@ label {
 		<div><label>Failures:</label><span id="badAttempts">0</span></div>
 		<div><label>Successes:</label><span id="goodAttempts">0</span></div>
 		<div><label>Cards left:</label><span id="cardsLeft">0</span></div>
+		<button id="moreCards">I need more</button>
 	</div>
 
   	<!-- JS -->
@@ -205,6 +206,21 @@ label {
 						startTurn(data.countdown);
 					} else {
 						endTurn('alreadyBlocked');
+					}
+				} catch(e) {}
+			});
+
+			socket.on('more_cards_response', function (json) {
+				try{
+					var data = JSON.parse(json);
+					if(data.success) { 
+						console.log('We got more cards');
+						data.newCards.forEach(function (card) {
+							board[card.cid] = card;
+						});
+						renderBoardUpdate(null, data.newCards);
+					} else {
+						console.log('Board already full!');
 					}
 				} catch(e) {}
 			});
@@ -249,7 +265,7 @@ label {
 			});
 
 			function buildCard(card) {
-				var cardContainerEl = $('<div class="card" id="' + card.cid + '"></div>'),
+				var cardContainerEl = $('<div class="card blendOut" id="' + card.cid + '"></div>'),
 					cardContentEl = $('<div class="content"></div>');
 				
 				cardContainerEl.click(function (e) {
@@ -282,14 +298,26 @@ label {
 			function renderBoardUpdate(oldCardsCids, newCards) {
 				if(!oldCardsCids) {
 					//only add new ones
-				} else if(!newCards) {
+					boardEl = $('#board');
+					newCards.forEach(function(card) {
+						board[card.cid] = card;
+						boardEl.append(buildCard(card));
+					});
+					$('.card').addClass('blendIn');
+				} else if(newCards.length === 0) {
 					//only remove old ones
+					oldCardsCids.forEach(function (cid, i) {
+						var el = $('#' + cid);
+						el.removeClass('blendIn')
+							.addClass('blendOut')
+							.remove();							
+					});
 				} else if(oldCardsCids.length === newCards.length) {
 					//update inplace
 					oldCardsCids.forEach(function (cid, i) {
 						var el = $('#' + cid);
-						el.removeClass('blendIn');
-						el.addClass('blendOut');
+						el.removeClass('blendIn')
+							.addClass('blendOut');
 						setTimeout(function () {
 							el.attr('id', newCards[i].cid)
 								.children('.content')
@@ -355,6 +383,12 @@ label {
 					socket.emit('solution_block');
 				} catch(e) { console.log('Couldn\'t send request for solution block'); }
 			}
+
+			$('#moreCards').click(function() {
+				try {
+					socket.emit('more_cards');
+				} catch(e) { console.log(s); }
+			})
 		});
 	</script>
 </body>
