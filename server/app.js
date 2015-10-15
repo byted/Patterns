@@ -109,20 +109,27 @@ Session.prototype.updateScoreForActivePlayer = function(reason) {
 	}
 	return stats
 }
-Session.prototype.replaceCardsWithRandom = function(cids) {
-	//delete cards from solution
-	delete this.board[cids[0]];
-	delete this.board[cids[1]];
-	delete this.board[cids[2]];
-	// draw new cards
-	var card1 = new Card(getRandomProperties());
-	var card2 = new Card(getRandomProperties());
-	var card3 = new Card(getRandomProperties());
-	this.board[card1.cid] = card1;
-	this.board[card2.cid] = card2;
-	this.board[card3.cid] = card3;
-
-	return [card1, card2, card3];
+Session.prototype.drawCards = function(cidsToDelete) {
+	var boardSize;
+	var that = this;
+	if(cidsToDelete) {
+		cidsToDelete.forEach(function(cid) {
+			delete that.board[cid];
+		});
+	}
+	boardSize = Object.keys(this.board).length;
+	if(boardSize === 9 || (boardSize === 12 && !cidsToDelete)) {
+		var card1 = new Card(getRandomProperties());
+		var card2 = new Card(getRandomProperties());
+		var card3 = new Card(getRandomProperties());
+		this.board[card1.cid] = card1;
+		this.board[card2.cid] = card2;
+		this.board[card3.cid] = card3;
+		return [card1, card2, card3];
+	} else if(boardSize > 12) {
+		throw new Error('Board is already full');
+	}
+	return []
 }
 Session.prototype.turnFor = function (pid) {
 	if(this.status !== 'active') {
@@ -177,6 +184,18 @@ io.on('connection', function(socket){
 		// for now, don't inform other players about the block
 	});
 
+	socket.on('more_cards', function() {
+		var msg;
+		console.log('More cards requested by', socket.id);
+		try{
+			msg = { success: true, newCards: session.drawCards() };
+		} catch(e) {
+			msg = { success: false };
+			console.log(e)
+		}
+		socket.emit('more_cards_response', JSON.stringify(msg));
+	})
+
 	socket.on('solution_query', function (data) {
 		console.log('Got solution:');
 		var solution = JSON.parse(data);
@@ -190,7 +209,7 @@ io.on('connection', function(socket){
 		}
 		else if(session.isSolution(solutionCids)) {
 			stats = session.turnEnd('good solution');
-			var newCards = session.replaceCardsWithRandom(solutionCids);
+			var newCards = session.drawCards(solutionCids);
 			//needs a check if this has worked!
 
 			socket.emit('solution_response',JSON.stringify({
