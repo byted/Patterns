@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Patterns</title>
+	<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/chardin.js/0.1.3/chardinjs.css">
 	<style>
 
 /* Animations */
@@ -42,7 +43,7 @@
 body {
     width: 100vmin;
     height: 100vmin;
-    margin: 0;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
@@ -50,6 +51,12 @@ body {
 }
 label {
     margin-right: .4em;
+}
+button {
+	background-color: rgba(0, 0, 0, 0.65);
+    color: white;
+    font-size: large;
+    border: 1px solid rgba(0,0,0,.4);
 }
 
 #countdown {
@@ -80,25 +87,40 @@ label {
     justify-content: center;
     width: 100%;
 }
-#stats span {
+#stats div {
     margin-right: 2em;
 }
 #board { 
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    align-content: center;
+    align-content: flex-start;
     flex-grow: 1;
 }
+#theMiddle {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	width: 50vmin;
+	height: 10px;
+	z-index: -100;
+}
+/*Override*/
+.chardinjs-tooltip {
+	max-width: 400px;
+}
+/*end*/
 
 .card {
-    border: 2px solid rgba(0,0,0,0);
-    box-shadow: 0 0 2px;
+    border: 1px solid rgba(0,0,0,0.4);
     margin: 1%;
     width: 17%;
     display: flex;
     flex-basis: 30%;
-    transition: all 500ms linear;
+    transition: all 200ms linear;
 
 }
 .card:before {
@@ -108,6 +130,7 @@ label {
 	}
 .card.selected {
 	border-color: black;
+	box-shadow: 0 0 2px;
 }
 
 .card > .content {
@@ -147,66 +170,57 @@ label {
   border-radius: 30%;
 }
 .symbol.lines.blue {
-	background-color: rgba(0,0,255,.4);
+	background-color: rgba(0, 166, 255,.4);
 }
 .symbol.lines.red {
-	background-color: rgba(255,0,0,.4);
+	background-color: rgba(255, 54, 108,.4);
 }
 .symbol.lines.green {
-	background-color: rgba(0,128,0,.4);
+	background-color: rgba(32, 191, 85,.4);
 }
 .symbol.full.blue {
-	background-color: rgba(0,0,255,1);
+	background-color: #00A6FF;/*rgba(0,0,255,1);*/
 }
 .symbol.full.red {
-	background-color: rgba(255,0,0,1);
+	background-color: #FF366C;/*rgba(255,0,0,1);*/
 }
 .symbol.full.green {
-	background-color: rgba(0,128,0,1);
-}
-.symbol.green {
-  border-color: green;
+	background-color: #20BF55;/*rgba(0,128,0,1);*/
 }
 .symbol.blue {
-  border-color: blue;
+  border-color: #00A6FF;
 }
 .symbol.red {
-  border-color: red;
+  border-color: #FF366C;
 }
-
-
+.symbol.green {
+  border-color: #20BF55;
+}
 
 	</style>
 </head>
 <body>
+	<div id="theMiddle" data-intro="<p>Each card has 3 properties: Color, Shape and Number of Symbols</p><strong>Your goal:</strong> Find a triplet where each property is either the same or different across all cards." data-position="bottom"></div>
 	<div id="countdown" class="invisvible"></div>
-	<div id="stats">
+	<div id="stats" data-intro="See how your're doing: Your points, bad attempts, sucessfull attempts and what's left in the deck." data-position="bottom">
 		<div id="points"><label>⛁</label><span>0</span></div>
 		<div id="badAttempts"><label>✕</label><span>0</span></div>
 		<div id="goodAttempts"><label>✓</label><span>0</span></div>
 		<div id="cardsLeft"><label>🂠</label><span>0</span></div>
 		<button id="moreCards">I need more</button>
 	</div>
-	<div id="board" class="invisvible">
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-		<div class="card"><div class="content"></div></div>
-	</div>
+	<div id="board" class="invisvible"></div>
 
   	<!-- JS -->
   	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/chardin.js/0.1.3/chardinjs.min.js" type="text/javascript"></script>
   	<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 	<script>
 		$(function () {
+			var firstRun = true;
+			if(firstRun) {
+				$('body').chardinJs('start');
+			}
 			var socket = io();
 			var board;
 			var ourTurn = false;
@@ -236,6 +250,7 @@ label {
 					var data = JSON.parse(json);
 					if(data.success) { 
 						console.log('We got more cards');
+						$('#moreCards').addClass('blendOut');
 						data.newCards.forEach(function (card) {
 							board[card.cid] = card;
 						});
@@ -252,6 +267,7 @@ label {
 					if(data.correct) {
 						reason = 'good solution';
 						//handle correct solution
+						$('#moreCards').addClass('blendIn');
 						data.oldCardsCids.forEach(function (cid) {
 							delete board[cid];
 						});
@@ -314,6 +330,11 @@ label {
 				});
 				$('#board').removeClass('invisvible');
 				$('.card').addClass('blendIn');
+
+				// 				var widthOfCards = $('.card').outerWidth(true) * 4;
+				// var widthOfBoard = $('#board').width();
+				// var toTranslate = (widthOfBoard - widthOfCards) / 2;
+				// $('#board').css('transform', 'translateX(' + toTranslate + 'px)');
 			}
 
 			function renderBoardUpdate(oldCardsCids, newCards) {
@@ -324,17 +345,17 @@ label {
 						board[card.cid] = card;
 						boardEl.append(buildCard(card));
 					});
-					// $('.card').css('width', '20vmin')
 					$('.card').addClass('blendIn');
 				} else if(newCards.length === 0) {
 					//only remove old ones
 					oldCardsCids.forEach(function (cid, i) {
 						var el = $('#' + cid);
 						el.removeClass('blendIn')
-							.addClass('blendOut')
-							.remove();							
+							.addClass('blendOut');
+						setTimeout(function () {
+							el.remove();
+						}, 500);
 					});
-					// $('.card').css('width', '25vmin')
 				} else if(oldCardsCids.length === newCards.length) {
 					//update inplace
 					oldCardsCids.forEach(function (cid, i) {
