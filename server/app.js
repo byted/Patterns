@@ -4,7 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 app.use(serveStatic(__dirname + '/../client'));
-http.listen(3000);
+http.listen(process.env.PORT || 3000);
 
 // game logic
 var COLORS = ['red', 'blue', 'green'];
