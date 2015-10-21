@@ -207,7 +207,7 @@ button {
 		<div id="cardsLeft"><label>🂠</label><span>0</span></div>
 		<button id="moreCards">I need more</button>
 	</div>
-	<div id="board" class="invisvible"></div>
+	<div id="board"></div>
 
   	<!-- JS -->
   	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
@@ -220,15 +220,15 @@ button {
 				$('body').chardinJs('start');
 			}
 			var socket = io();
-			var board;
+			var board = {};
 			var ourTurn = false;
 			var timer = null;
 
 			socket.on('joined', function (json) {
 				try {
 					var data = JSON.parse(json);
-					board = data.board;
-					renderGame();
+					console.log(data.board);
+					renderBoardUpdate(null, data.board);
 				} catch(e) {console.log(e); }
 			});
 
@@ -248,7 +248,6 @@ button {
 					var data = JSON.parse(json);
 					if(data.success) { 
 						console.log('We got more cards');
-						$('#moreCards').addClass('blendOut');
 						data.newCards.forEach(function (card) {
 							board[card.cid] = card;
 						});
@@ -265,7 +264,6 @@ button {
 					if(data.correct) {
 						reason = 'good solution';
 						//handle correct solution
-						$('#moreCards').addClass('blendIn');
 						data.oldCardsCids.forEach(function (cid) {
 							delete board[cid];
 						});
@@ -319,37 +317,32 @@ button {
 				return '<div class="symbol '+ card.color +' '+ card.shape +' '+ card.fill +'"><div class="content"></div></div>';
 			}
 
-			function renderGame() {
-				var boardEl = $('#board');
-				
-				boardEl.empty();
-				Object.keys(board).forEach(function (cid) {
-					boardEl.append(buildCard(board[cid]));
-				});
-				makeBoard('smaller');
-				$('#board').removeClass('invisvible');
-				$('.card').addClass('blendIn');
-			}
-
 			function renderBoardUpdate(oldCardsCids, newCards) {
 				if(!oldCardsCids) {
 					//only add new ones
-					makeBoard('bigger');
 					boardEl = $('#board');
 					newCards.forEach(function(card) {
 						board[card.cid] = card;
 						boardEl.append(buildCard(card));
 					});
+					if(Object.keys(newCards).length == 3) {
+						makeBoard('bigger');
+						$('#moreCards').removeClass('blendIn').addClass('blendOut');
+					} else {
+						makeBoard('smaller');
+						$('#moreCards').removeClass('blendOut').addClass('blendIn');
+					}
 					$('.card').addClass('blendIn');
 				} else if(newCards.length === 0) {
 					//only remove old ones
+					$('#moreCards').removeClass('blendOut').addClass('blendIn');
 					oldCardsCids.forEach(function (cid, i) {
 						var el = $('#' + cid);
 						el.removeClass('blendIn')
 							.addClass('blendOut');
 						setTimeout(function () {
 							el.remove();
-						}, 500);
+						}, 250);
 					});
 					makeBoard('smaller');
 				} else if(oldCardsCids.length === newCards.length) {
@@ -364,7 +357,7 @@ button {
 								.empty()
 								.append(buildSymbol(newCards[i]));
 							el.addClass('blendIn');
-						}, 500);
+						}, 250);
 							
 					});
 				}

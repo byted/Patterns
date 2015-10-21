@@ -167,8 +167,7 @@ io.on('connection', function(socket){
 	session.addPlayer(socket);
 
 	socket.emit('joined', JSON.stringify({
-		board: session.board,
-		status: session.status	
+		board: Object.keys(session.board).map(function(key){return session.board[key]})
 	}));
 
 	socket.on('solution_block', function () {
