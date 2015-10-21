@@ -9,30 +9,26 @@
 /* Animations */
 @keyframes show {
     from {
-        transform:scale(0.7);
-        opacity:0
+        transform:scale(0);
     }
     to {
         transform: scale(1);
-        opacity:1
     }
 }
 @keyframes hide {
     from {
         transform:scale(1);
-        opacity:1
     }
     to {
-        transform: scale(.7);
-        opacity:0
+        transform: scale(0);
     }
 }
 .blendOut {
-	animation: hide .5s;
+	animation: hide .2s;
 	animation-fill-mode: both;
 }
 .blendIn {
-	animation:show .5s;
+	animation:show .2s;
     animation-fill-mode:both
 }
 .invisvible {
@@ -48,6 +44,7 @@ body {
     flex-direction: column;
     flex-wrap: wrap;
     font-family: Arial, sans-serif;
+    overflow: hidden;
 }
 label {
     margin-right: .4em;
@@ -96,6 +93,7 @@ button {
     flex-wrap: wrap;
     align-content: flex-start;
     flex-grow: 1;
+    transition: transform 200ms ease-in-out;
 }
 #theMiddle {
 	position: absolute;
@@ -328,18 +326,15 @@ button {
 				Object.keys(board).forEach(function (cid) {
 					boardEl.append(buildCard(board[cid]));
 				});
+				makeBoard('smaller');
 				$('#board').removeClass('invisvible');
 				$('.card').addClass('blendIn');
-
-				// 				var widthOfCards = $('.card').outerWidth(true) * 4;
-				// var widthOfBoard = $('#board').width();
-				// var toTranslate = (widthOfBoard - widthOfCards) / 2;
-				// $('#board').css('transform', 'translateX(' + toTranslate + 'px)');
 			}
 
 			function renderBoardUpdate(oldCardsCids, newCards) {
 				if(!oldCardsCids) {
 					//only add new ones
+					makeBoard('bigger');
 					boardEl = $('#board');
 					newCards.forEach(function(card) {
 						board[card.cid] = card;
@@ -356,6 +351,7 @@ button {
 							el.remove();
 						}, 500);
 					});
+					makeBoard('smaller');
 				} else if(oldCardsCids.length === newCards.length) {
 					//update inplace
 					oldCardsCids.forEach(function (cid, i) {
@@ -372,10 +368,17 @@ button {
 							
 					});
 				}
-				// var colums = Object.keys(baord).length / 3
-				// var newWidth = parseInt($('body').css('width'), 10) / columns
-				// console.log(newWidth)
-				// $('.card').css('width', newWidth)	
+			}
+
+			function makeBoard(newSize) {
+				if(newSize === 'smaller') {
+					var widthOfBoard = $('#board').width()
+					,	widthOfCards = $('.card').outerWidth(true) * 4
+					,	toTranslate = (widthOfBoard - widthOfCards) / 2
+					$('#board').css('transform', 'translateX(' + toTranslate + 'px)');
+				} else if (newSize === 'bigger') {
+					$('#board').css('transform', 'translateX(0)');
+				}
 			}
 
 			function renderStatsUpdate(stats) {
