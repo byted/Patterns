@@ -10,6 +10,7 @@ http.listen(process.env.PORT || 3000);
 var COLORS = ['red', 'blue', 'green'];
 var SHAPES = ['square', 'circle', 'triangle'];
 var FILLS = ['none', 'lines', 'full'];
+
 function getRandomProperties() {
 	return {
 		aColor: COLORS[getRandomInt(0,3)],
@@ -160,15 +161,36 @@ var session;
 
 io.on('connection', function(socket){
 	console.log('Client connected: ' + socket.id);
-	if(!session) {
-		session = new Session();
-	}
-	socket.join(session.sid);
-	session.addPlayer(socket);
 
-	socket.emit('joined', JSON.stringify({
-		board: Object.keys(session.board).map(function(key){return session.board[key]})
+	var player = new Player(socket);
+
+	socket.emit('welcome', JSON.stringify({
+		pid: player.pid	
 	}));
+
+	socket.on('join', function (json) {
+		var session
+		,	data = JSON.parse(json);
+		if(data.sid === '') {
+			session = new Session();
+			sessions[session.sid] = session;
+			console.log('Create new session for', socket.id);
+		} else if(data.sid.charAt(0) !== '#' || !sessions[data.sid]) {
+			socket.emit('invalid_session');
+			return;
+		} else {
+			session = sessions[data.sid];
+		}
+		
+		session.addPlayer(socket);
+		socket.join(session.sid);
+		console.log(socket.id, 'joined', session.sid);
+		socket.emit('joined', JSON.stringify({
+			sid: session.sid,
+			board: Object.keys(session.board).map(function(key){return session.board[key]})
+		}));
+
+	});
 
 	socket.on('solution_block', function () {
 		var msg;

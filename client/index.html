@@ -96,15 +96,24 @@ button {
     transition: transform 200ms ease-in-out;
 }
 #theMiddle {
+	width: 50vmin;
+	height: 10px;
+	z-index: -100;
+}
+#invalidSession {
+	font-size: x-large;
+	width: 50vmin;
+	height: 1em;
+	text-align: center;
+}
+
+.centercenter {
 	position: absolute;
 	top: 0;
 	bottom: 0;
 	left: 0;
 	right: 0;
 	margin: auto;
-	width: 50vmin;
-	height: 10px;
-	z-index: -100;
 }
 /*Override*/
 .chardinjs-tooltip {
@@ -198,9 +207,9 @@ button {
 	</style>
 </head>
 <body>
-	<div id="theMiddle" data-intro="<p>Each card has 3 properties: Color, Shape and Number of Symbols</p><strong>Your goal:</strong> Find a triplet where each property is either the same or different across all cards." data-position="bottom"></div>
+	<div id="theMiddle" class="centercenter" data-intro="<p>Each card has 3 properties: Color, Shape and Number of Symbols</p><strong>Your goal:</strong> Find a triplet where each property is either the same or different across all cards." data-position="bottom"></div>
 	<div id="countdown" class="invisvible"></div>
-	<div id="stats" data-intro="See how your're doing: Your points, bad attempts, sucessfull attempts and what's left in the deck." data-position="bottom">
+	<div id="stats" style="display:none;" data-intro="See how your're doing: Your points, bad attempts, sucessfull attempts and what's left in the deck." data-position="bottom">
 		<div id="points"><label>⛁</label><span>0</span></div>
 		<div id="badAttempts"><label>✕</label><span>0</span></div>
 		<div id="goodAttempts"><label>✓</label><span>0</span></div>
@@ -215,20 +224,36 @@ button {
   	<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 	<script>
 		$(function () {
-			var firstRun = true;
-			if(firstRun) {
-				$('body').chardinJs('start');
-			}
-			var socket = io();
-			var board = {};
-			var ourTurn = false;
-			var timer = null;
+			var firstRun = true
+			,	socket = io()
+			,	pid
+			,	sid
+			,	board = {}
+			,	ourTurn = false
+			,	timer = null;
+
+			socket.on('welcome', function (json) {
+				console.log(json);
+				pid = JSON.parse(json).pid;
+				socket.emit('join', JSON.stringify({
+					sid: location.hash
+				}));
+			});
+
+			socket.on('invalid_session', function () {
+				$('#board').html('<div id="invalidSession" class="centercenter">Invalid session.</br><a href="/">⟳ Start a new one</a></div>');
+			})
 
 			socket.on('joined', function (json) {
 				try {
 					var data = JSON.parse(json);
+					location.hash = data.sid;
+					$('#stats').fadeIn();
 					console.log(data.board);
 					renderBoardUpdate(null, data.board);
+					if(firstRun) {
+						$('body').chardinJs('start');
+					}
 				} catch(e) {console.log(e); }
 			});
 
