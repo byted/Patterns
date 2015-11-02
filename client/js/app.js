@@ -61,6 +61,7 @@ $(function () {
 			if(data.correct) {
 				reason = 'good solution';
 				//handle correct solution
+				console.log(data)
 				data.oldCardsCids.forEach(function (cid) {
 					delete board[cid];
 				});
@@ -94,7 +95,7 @@ $(function () {
 		} catch(e) {console.log(e); }
 	});
 
-	function buildCard(card) {
+	function buildCard(card, withoutContainer) {
 		var cardContainerEl = $('<div class="card blendOut" id="' + card.cid + '"></div>'),
 			cardContentEl = $('<div class="content"></div>');
 		
@@ -107,7 +108,7 @@ $(function () {
 		for (var i = card.count - 1; i >= 0; i--) {
 			cardContentEl.append(buildSymbol(card));
 		};
-		return cardContainerEl.append(cardContentEl);
+		return withoutContainer ? cardContentEl : cardContainerEl.append(cardContentEl);
 	}
 
 	function buildSymbol(card) {
@@ -150,9 +151,8 @@ $(function () {
 					.addClass('blendOut');
 				setTimeout(function () {
 					el.attr('id', newCards[i].cid)
-						.children('.content')
 						.empty()
-						.append(buildSymbol(newCards[i]));
+						.append(buildCard(newCards[i], true));
 					el.addClass('blendIn');
 				}, 250);
 					
