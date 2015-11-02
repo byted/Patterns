@@ -99,6 +99,9 @@ Session.prototype.removePlayer = function(pid) {
 	catch (e) { return false; }
 	return true;
 }
+Session.prototype.getNumberOfPlayers = function() {
+	return Object.keys(this.players).length;
+}
 Session.prototype.updateScoreForActivePlayer = function(reason) {
 	var stats = this.players[this.activePlayer].stats;
 	if(reason === 'good solution') {
@@ -261,6 +264,15 @@ io.on('connection', function(socket){
 			}));
 		}
 	});
+
+	socket.on('leave', function (json) {
+		var data = JSON.parse(json);
+		try {
+			if(sessions[data.sid].getNumberOfPlayers() === 1) {
+				delete sessions[data.sid];
+			}
+		} catch(e) { console.log(e)}
+	})
 
 	socket.on('disconnect', function () {
 		console.log('Client disconnected: ' + socket.id);

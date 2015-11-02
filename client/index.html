@@ -454,6 +454,9 @@ button {
 				try {
 					socket.emit('more_cards', JSON.stringify({sid: location.hash}));
 				} catch(e) { console.log(s); }
+			});
+			$(window).unload(function() {
+				socket.emit('leave', JSON.stringify({sid: location.hash}))
 			})
 		});
 	</script>
