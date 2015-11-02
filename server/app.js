@@ -50,7 +50,7 @@ function Card(props) {
 }
 //Session
 function Session() {
-	this.sid = guidGenerator('sid_');
+	this.sid = '#' + guidGenerator('sid_');
 	this.status = 'active';
 	this.activePlayer;
 	this.board = createBoard();
@@ -132,32 +132,26 @@ Session.prototype.drawCards = function(cidsToDelete) {
 	}
 	return []
 }
-Session.prototype.turnFor = function (pid) {
+Session.prototype.turnFor = function(pid) {
 	if(this.status !== 'active') {
 		throw new Error('session already blocked');
 	}
 	this.activePlayer = pid;
 	this.status = 'blocked';
 	console.log('Turn: ' + pid);
-	var that = this;
-	this.timeout = setTimeout(function () {
-		that.turnEnd('countdown');
-	}, this.turnTimeout);
-
 }
 Session.prototype.turnEnd = function (reason) {
 	this.status = 'active';
 	clearTimeout(this.timeout);
-	points = this.updateScoreForActivePlayer(reason);
+	stats = this.updateScoreForActivePlayer(reason);
 	console.log('Turn end: ' + this.activePlayer + ' (' + reason + ')');
 	this.activePlayer = null;
-	return points
+	return stats
 }
 
 //--------
 
 var sessions = {};
-var session;
 
 io.on('connection', function(socket){
 	console.log('Client connected: ' + socket.id);
@@ -177,6 +171,7 @@ io.on('connection', function(socket){
 			console.log('Create new session for', socket.id);
 		} else if(data.sid.charAt(0) !== '#' || !sessions[data.sid]) {
 			socket.emit('invalid_session');
+			console.log(data.sid)
 			return;
 		} else {
 			session = sessions[data.sid];
@@ -192,10 +187,20 @@ io.on('connection', function(socket){
 
 	});
 
-	socket.on('solution_block', function () {
-		var msg;
+	socket.on('solution_block', function (json) {
+		var msg, session
+		,	data = JSON.parse(json);
 		try {
+			session = sessions[data.sid];
 			session.turnFor(socket.id);
+			session.timeout = setTimeout(function () {
+				var stats = session.turnEnd('countdown');
+				socket.emit('solution_response',JSON.stringify({
+					correct: false,
+					error: 'time_out',
+					stats: stats
+				}));
+			}, session.turnTimeout);
 			msg = { success: true, countdown: session.turnTimeout };
 		} catch(e) {
 			msg = { success: false };
@@ -205,11 +210,12 @@ io.on('connection', function(socket){
 		// for now, don't inform other players about the block
 	});
 
-	socket.on('more_cards', function() {
-		var msg;
+	socket.on('more_cards', function(json) {
+		var msg
+		,	data = JSON.parse(json)
 		console.log('More cards requested by', socket.id);
 		try{
-			msg = { success: true, newCards: session.drawCards() };
+			msg = { success: true, newCards: sessions[data.sid].drawCards() };
 		} catch(e) {
 			msg = { success: false };
 			console.log(e)
@@ -219,9 +225,10 @@ io.on('connection', function(socket){
 
 	socket.on('solution_query', function (data) {
 		console.log('Got solution:');
-		var solution = JSON.parse(data);
-		console.log(solution);
-		var solutionCids = solution.cids;
+		var data = JSON.parse(data)
+		,	solutionCids = data.cids
+		,	session = sessions[data.sid];
+		console.log(solutionCids);
 		if(session.status !== 'blocked' || session.activePlayer !== socket.id) {
 			socket.emit('solution_response',JSON.stringify({
 				correct: false,

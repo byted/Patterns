@@ -227,13 +227,11 @@ button {
 			var firstRun = true
 			,	socket = io()
 			,	pid
-			,	sid
 			,	board = {}
 			,	ourTurn = false
 			,	timer = null;
 
 			socket.on('welcome', function (json) {
-				console.log(json);
 				pid = JSON.parse(json).pid;
 				socket.emit('join', JSON.stringify({
 					sid: location.hash
@@ -249,7 +247,6 @@ button {
 					var data = JSON.parse(json);
 					location.hash = data.sid;
 					$('#stats').fadeIn();
-					console.log(data.board);
 					renderBoardUpdate(null, data.board);
 					if(firstRun) {
 						$('body').chardinJs('start');
@@ -272,7 +269,6 @@ button {
 				try{
 					var data = JSON.parse(json);
 					if(data.success) { 
-						console.log('We got more cards');
 						data.newCards.forEach(function (card) {
 							board[card.cid] = card;
 						});
@@ -433,7 +429,6 @@ button {
 				var selected = $(selector);
 				if(selected.length === 3) {
 					if(ourTurn) {
-						console.log('3 cards selected -> send solution');
 						sendSolution([selected[0].id, selected[1].id, selected[2].id]);
 					} else { console.log('Can not send. It is not our turn!'); }
 				}
@@ -442,20 +437,21 @@ button {
 			function sendSolution(cids) {
 				try {
 					socket.emit('solution_query', JSON.stringify({
-						cids: cids
+						cids: cids,
+						sid: location.hash
 					}));
 				} catch(e) { console.log('Couldn\'t send solution'); }
 			}
 
 			function askForTurn() {
 				try {
-					socket.emit('solution_block');
+					socket.emit('solution_block', JSON.stringify({sid: location.hash}));
 				} catch(e) { console.log('Couldn\'t send request for solution block'); }
 			}
 
 			$('#moreCards').click(function() {
 				try {
-					socket.emit('more_cards');
+					socket.emit('more_cards', JSON.stringify({sid: location.hash}));
 				} catch(e) { console.log(s); }
 			})
 		});
