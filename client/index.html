@@ -224,7 +224,7 @@ button {
   	<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 	<script>
 		$(function () {
-			var firstRun = true
+			var welcomeBack = localStorage.getItem('welcomeBack')
 			,	socket = io()
 			,	pid
 			,	board = {}
@@ -248,8 +248,9 @@ button {
 					location.hash = data.sid;
 					$('#stats').fadeIn();
 					renderBoardUpdate(null, data.board);
-					if(firstRun) {
+					if(!welcomeBack) {
 						$('body').chardinJs('start');
+						localStorage.setItem('welcomeBack', 'hell yeah')
 					}
 				} catch(e) {console.log(e); }
 			});
