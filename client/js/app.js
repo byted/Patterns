@@ -1,21 +1,19 @@
 $(function () {
 	var welcomeBack = localStorage.getItem('welcomeBack')
 	,	socket = io()
-	,	pid
 	,	board = {}
 	,	ourTurn = false
 	,	timer = null;
 
 	socket.on('welcome', function (json) {
-		pid = JSON.parse(json).pid;
 		socket.emit('join', JSON.stringify({
 			sid: location.hash
 		}));
 	});
 
 	socket.on('invalid_session', function () {
-		$('#board').html('<div id="invalidSession" class="centercenter">Invalid session.</br><a href="/">⟳ Start a new one</a></div>');
-	})
+		showSplashScreen('Game not found.');
+	});
 
 	socket.on('joined', function (json) {
 		try {
@@ -23,6 +21,7 @@ $(function () {
 			location.hash = data.sid;
 			$('#stats').fadeIn();
 			renderBoardUpdate(null, data.board);
+			renderStatsUpdate(data.stats);
 			if(!welcomeBack) {
 				$('body').chardinJs('start');
 				localStorage.setItem('welcomeBack', 'hell yeah')
@@ -49,6 +48,7 @@ $(function () {
 					board[card.cid] = card;
 				});
 				renderBoardUpdate(null, data.newCards);
+				renderStatsUpdate(data.stats);
 			} else {
 				console.log('Board already full!');
 			}
@@ -69,7 +69,6 @@ $(function () {
 					board[card.cid] = card;
 				});
 				renderBoardUpdate(data.oldCardsCids, data.newCards);
-
 			} else {
 				reason = 'bad solution';
 				console.log(data.error);
@@ -94,6 +93,30 @@ $(function () {
 			$('.card.selected').removeClass('selected');
 		} catch(e) {console.log(e); }
 	});
+
+	socket.on('finished_response', function (json) {
+		var data = JSON.parse(json)
+		,	highscore = localStorage.getItem('highscore')
+		, 	spruch = 'Nah, not your best game. Maybe you\'re drunk?';
+		if(!highscore || highscore < data.stats.points) {
+			localStorage.setItem('highscore', data.stats.points);
+			spruch = !highscore ? 'Welcome! Keep playing to get better.' : 'Wow, you topped yourself. Have a cookie!';
+		}
+		var content = '<div class="gameOver">'+spruch+'</div><span class="goodAttempts">'+ data.stats.goodAttempts + 
+				' patterns</span> + <span class="badAttempts">' + data.stats.badAttempts + 
+				' bad attempts</span><div class="points">= ' + data.stats.points + ' Points</div>'
+		showSplashScreen(content);
+	});
+
+	function showSplashScreen(content) {
+		$('#board').css('transform', 'rotateY(270deg)');
+		$('#stats').slideUp();
+		$('#splashScreen > div').html(content);
+		var sc = $('#splashScreen');
+		sc.css('margin-top', $('body').height());
+		sc.show();
+		sc.animate({marginTop: 50});
+	}
 
 	function buildCard(card, withoutContainer) {
 		var cardContainerEl = $('<div class="card blendOut" id="' + card.cid + '"></div>'),
@@ -172,9 +195,17 @@ $(function () {
 	}
 
 	function renderStatsUpdate(stats) {
-		$('#points > span').html(stats.points);
-		$('#goodAttempts > span').html(stats.goodAttempts);
-		$('#badAttempts > span').html(stats.badAttempts);
+		if(stats.points) { $('#points > span').html(stats.points); }
+		if(stats.goodAttempts) { $('#goodAttempts > span').html(stats.goodAttempts); }
+		if(stats.badAttempts) { $('#badAttempts > span').html(stats.badAttempts); }
+		if(stats.cardsLeft) { $('#cardsLeft > span').html(stats.cardsLeft); }
+		if(stats.cardsLeft < 69) {
+			$('#moreCards')
+				.removeClass('blendOut').addClass('blendIn')
+				.html('I\'m done')
+				.off()
+				.click(function() { socket.emit('finished', JSON.stringify({sid: location.hash})); });
+		}
 	}
 
 	function startTurn(milisecondsToGo) {
