@@ -1,7 +1,7 @@
 /* Animations */
 @keyframes show {
     from {
-        transform:scale(0);
+        transform: scale(0);
     }
     to {
         transform: scale(1);
@@ -9,7 +9,7 @@
 }
 @keyframes hide {
     from {
-        transform:scale(1);
+        transform: scale(1);
     }
     to {
         transform: scale(0);
@@ -28,6 +28,11 @@
 }
 
 /*---*/
+@media screen and (max-width: 480px) {
+    body {
+        width: 95vmin;
+    }
+}
 body {
     width: 100vmin;
     height: 100vmin;
@@ -62,10 +67,10 @@ button {
 }
 
 #goodAttempts > label {
-    color: green;
+    color: #20BF55;
 }
 #badAttempts > label {
-    color: red;
+    color: #FF366C;
 }
 
 #stats {
@@ -79,6 +84,7 @@ button {
 #stats div {
     margin-right: 2em;
 }
+
 #board { 
     display: flex;
     flex-direction: column;
@@ -92,11 +98,27 @@ button {
 	height: 10px;
 	z-index: -100;
 }
-#invalidSession {
+#splashScreen {
+    display: none;
 	font-size: x-large;
 	width: 50vmin;
 	height: 1em;
 	text-align: center;
+}
+
+#splashScreen .points {
+    margin: 15px;
+    font-size: 4em;
+    color: #00A6FF;
+}
+#splashScreen .goodAttempts {
+    color: #20BF55;
+}
+#splashScreen .badAttempts {
+    color: #FF366C;
+}
+#splashScreen .gameOver {
+    margin-bottom: 1em;
 }
 
 .centercenter {
@@ -105,7 +127,7 @@ button {
 	bottom: 0;
 	left: 0;
 	right: 0;
-	margin: auto;
+	margin: 50px auto;
 }
 /*Override*/
 .chardinjs-tooltip {
@@ -119,7 +141,7 @@ button {
     width: 17%;
     display: flex;
     flex-basis: 30%;
-    transition: all 200ms linear;
+    transition: all 50ms linear;
 
 }
 .card:before {
