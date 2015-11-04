@@ -199,7 +199,7 @@ $(function () {
 		if(stats.goodAttempts) { $('#goodAttempts > span').html(stats.goodAttempts); }
 		if(stats.badAttempts) { $('#badAttempts > span').html(stats.badAttempts); }
 		if(stats.cardsLeft) { $('#cardsLeft > span').html(stats.cardsLeft); }
-		if(stats.cardsLeft < 69) {
+		if(stats.cardsLeft === 0) {
 			$('#moreCards')
 				.removeClass('blendOut').addClass('blendIn')
 				.html('I\'m done')
