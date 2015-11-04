@@ -11,6 +11,20 @@ var COLORS = ['red', 'blue', 'green'];
 var SHAPES = ['square', 'circle', 'triangle'];
 var FILLS = ['none', 'lines', 'full'];
 
+/**
+ * Randomize array element order in-place.
+ * Using Durstenfeld shuffle algorithm.
+ */
+function shuffle(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;
+}
+
 function getRandomProperties() {
 	return {
 		aColor: COLORS[getRandomInt(0,3)],
@@ -48,25 +62,50 @@ function Card(props) {
 	this.fill = props.aFill;
 	this.count = props.aCount;
 }
+//Deck
+function Deck() {
+	cards = [];
+	COLORS.forEach(function(c) {
+		SHAPES.forEach(function(s) {
+			FILLS.forEach(function(f) {
+				[1, 2, 3].forEach(function(count) {
+					var card = new Card({
+						aColor: c,
+						aShape: s,
+						aFill: f,
+						aCount: count
+					});
+					cards.push(card);
+				});
+			});
+		});
+	});
+	shuffle(cards);
+	this.cards = cards;
+}
+Deck.prototype.draw = function (count) {
+	var drawnCards = [];
+	for (var i = count - 1; i >= 0; i--) {
+		var c = this.cards.pop();
+		if(c) { drawnCards.push(c); }
+	};
+	return drawnCards
+}
 //Session
 function Session() {
 	this.sid = '#' + guidGenerator('sid_');
 	this.status = 'active';
 	this.activePlayer;
-	this.board = createBoard();
+	this.deck = new Deck()
+	this.board = {};
 	this.players = {};
 	this.turnTimeout = 3000;
 	this.timeout = null;
 
-	function createBoard() {
-		var c = {};
-		for(var i = 0; i < 12; i++) {
-			var newCard = new Card(getRandomProperties());
-			c[newCard.cid] = newCard;
-		}
-		return c;
-	}
-
+	var that = this;
+	this.deck.draw(12).forEach(function (c) {
+		that.board[c.cid] = c;
+	});
 }
 Session.prototype.isSolution = function (cids) {
 
@@ -111,6 +150,12 @@ Session.prototype.updateScoreForActivePlayer = function(reason) {
 		stats.points += -3;
 		stats.badAttempts += 1
 	}
+	stats.cardsLeft = this.deck.cards.length;
+	return stats
+}
+Session.prototype.getStatsFor = function(pid) {
+	var stats = this.players[pid].stats;
+	stats.cardsLeft = this.deck.cards.length;
 	return stats
 }
 Session.prototype.drawCards = function(cidsToDelete) {
@@ -123,13 +168,12 @@ Session.prototype.drawCards = function(cidsToDelete) {
 	}
 	boardSize = Object.keys(this.board).length;
 	if(boardSize === 9 || (boardSize === 12 && !cidsToDelete)) {
-		var card1 = new Card(getRandomProperties());
-		var card2 = new Card(getRandomProperties());
-		var card3 = new Card(getRandomProperties());
-		this.board[card1.cid] = card1;
-		this.board[card2.cid] = card2;
-		this.board[card3.cid] = card3;
-		return [card1, card2, card3];
+		var cards = this.deck.draw(3)
+		,	that = this;
+		cards.forEach(function(c) {
+			that.board[c.cid] = c;
+		});
+		return cards;
 	} else if(boardSize > 12) {
 		throw new Error('Board is already full');
 	}
@@ -185,7 +229,8 @@ io.on('connection', function(socket){
 		console.log(socket.id, 'joined', session.sid);
 		socket.emit('joined', JSON.stringify({
 			sid: session.sid,
-			board: Object.keys(session.board).map(function(key){return session.board[key]})
+			board: Object.keys(session.board).map(function(key){return session.board[key]}),
+			stats: { cardsLeft: session.deck.cards.length }
 		}));
 
 	});
@@ -218,7 +263,12 @@ io.on('connection', function(socket){
 		,	data = JSON.parse(json)
 		console.log('More cards requested by', socket.id);
 		try{
-			msg = { success: true, newCards: sessions[data.sid].drawCards() };
+			var session = sessions[data.sid];
+			msg = {
+				success: true,
+				newCards: session.drawCards(),
+				stats: { cardsLeft: session.deck.cards.length }
+			};
 		} catch(e) {
 			msg = { success: false };
 			console.log(e)
@@ -263,6 +313,13 @@ io.on('connection', function(socket){
 				stats: stats
 			}));
 		}
+	});
+
+	socket.on('finished', function (json) {
+		var data = JSON.parse(json);
+		socket.emit('finished_response', JSON.stringify({
+			stats: sessions[data.sid].getStatsFor(socket.id)
+		}));
 	});
 
 	socket.on('leave', function (json) {
