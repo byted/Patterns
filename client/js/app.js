@@ -104,13 +104,13 @@ $(function () {
 		}
 		var content = '<div class="gameOver">'+spruch+'</div><span class="goodAttempts">'+ data.stats.goodAttempts + 
 				' patterns</span> + <span class="badAttempts">' + data.stats.badAttempts + 
-				' bad attempts</span><div class="points">= ' + data.stats.points + ' Points</div>'
+				' bad attempts =</span><div class="points">' + data.stats.points + ' Points</div>'
 		showSplashScreen(content);
 	});
 
 	function showSplashScreen(content) {
-		$('#board').css('transform', 'rotateY(270deg)');
-		$('#stats').slideUp();
+		$('#stats').fadeOut();
+		$('#board').fadeOut();
 		$('#splashScreen > div').html(content);
 		var sc = $('#splashScreen');
 		sc.css('margin-top', $('body').height());
@@ -123,19 +123,22 @@ $(function () {
 			cardContentEl = $('<div class="content"></div>');
 		
 		cardContainerEl.click(function (e) {
-				if(!ourTurn) { askForTurn() }
-				$(this).toggleClass('selected');
-				checkAndSendSolution('.selected');
-			});
+			if(!ourTurn) { askForTurn() }
+			$(this).toggleClass('selected');
+			checkAndSendSolution('.selected');
+		});
 
-		for (var i = card.count - 1; i >= 0; i--) {
-			cardContentEl.append(buildSymbol(card));
+		for (var count = card.count, i = 2; i >= 0; i--, count--) {
+			var visible = false
+			if(count > 0) { visible = true }
+			cardContentEl.prepend(buildSymbol(card, visible));
 		};
 		return withoutContainer ? cardContentEl : cardContainerEl.append(cardContentEl);
 	}
 
-	function buildSymbol(card) {
-		return '<div class="symbol '+ card.color +' '+ card.shape +' '+ card.fill +'"><div class="content"></div></div>';
+	function buildSymbol(card, visible) {
+		var hidden = visible ? '': 'style="visibility: hidden"';
+		return '<div class="symbol '+ card.color +' '+ card.shape +' '+ card.fill +'" ' + hidden + '><div class="content"></div></div>';
 	}
 
 	function renderBoardUpdate(oldCardsCids, newCards) {
@@ -146,13 +149,6 @@ $(function () {
 				board[card.cid] = card;
 				boardEl.append(buildCard(card));
 			});
-			if(Object.keys(newCards).length == 3) {
-				makeBoard('bigger');
-				$('#moreCards').removeClass('blendIn').addClass('blendOut');
-			} else {
-				makeBoard('smaller');
-				$('#moreCards').removeClass('blendOut').addClass('blendIn');
-			}
 			$('.card').addClass('blendIn');
 		} else if(newCards.length === 0) {
 			//only remove old ones
@@ -165,7 +161,6 @@ $(function () {
 					el.remove();
 				}, 250);
 			});
-			makeBoard('smaller');
 		} else if(oldCardsCids.length === newCards.length) {
 			//update inplace
 			oldCardsCids.forEach(function (cid, i) {
@@ -180,17 +175,6 @@ $(function () {
 				}, 250);
 					
 			});
-		}
-	}
-
-	function makeBoard(newSize) {
-		if(newSize === 'smaller') {
-			var widthOfBoard = $('#board').width()
-			,	widthOfCards = $('.card').outerWidth(true) * 4
-			,	toTranslate = (widthOfBoard - widthOfCards) / 2
-			$('#board').css('transform', 'translateX(' + toTranslate + 'px)');
-		} else if (newSize === 'bigger') {
-			$('#board').css('transform', 'translateX(0)');
 		}
 	}
 

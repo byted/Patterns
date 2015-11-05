@@ -28,29 +28,29 @@
 }
 
 /*---*/
-@media screen and (max-width: 480px) {
-    body {
-        width: 95vmin;
+@media screen and (min-aspect-ratio: 7/10) {
+    .card {
+        flex-basis: 17% !important;
     }
 }
 body {
-    width: 100vmin;
-    height: 100vmin;
     margin: 0 auto;
+    font-family: Arial, sans-serif;
+    font-size: 3em;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    font-family: Arial, sans-serif;
     overflow: hidden;
+    max-width: 1000px;
 }
 label {
-    margin-right: .4em;
+    margin-right: .2em;
 }
 button {
-	background-color: rgba(0, 0, 0, 0.65);
+    background-color: rgba(0, 0, 0, 0.65);
     color: white;
-    font-size: large;
-    border: 1px solid rgba(0,0,0,.4);
+    font-size: .7em;
+    border:none;
 }
 
 #countdown {
@@ -59,7 +59,6 @@ button {
     left: 0;
     right: 0;
     margin: 0 auto;
-    font-size: 2em;
     padding: 1em;
     text-align: center;
     background-color: rgba(77, 77, 77, 0.89);
@@ -74,24 +73,18 @@ button {
 }
 
 #stats {
-	font-size: 2em;
-	padding: 1em 0;
+    padding: .5em 0;
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-around;
+    margin: 0 auto;
     width: 100%;
 }
-#stats div {
-    margin-right: 2em;
-}
-
 #board { 
     display: flex;
-    flex-direction: column;
     flex-wrap: wrap;
     align-content: flex-start;
-    flex-grow: 1;
-    transition: transform 200ms ease-in-out;
+    justify-content: center;
 }
 #theMiddle {
 	width: 50vmin;
@@ -100,15 +93,19 @@ button {
 }
 #splashScreen {
     display: none;
-	font-size: x-large;
-	width: 50vmin;
-	height: 1em;
+	max-width: 800px;
 	text-align: center;
 }
-
+#splashScreen a {
+    position: fixed;
+    bottom: 50px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+}
 #splashScreen .points {
     margin: 15px;
-    font-size: 4em;
+    font-size: 3em;
     color: #00A6FF;
 }
 #splashScreen .goodAttempts {
@@ -127,7 +124,7 @@ button {
 	bottom: 0;
 	left: 0;
 	right: 0;
-	margin: 50px auto;
+	margin: auto;
 }
 /*Override*/
 .chardinjs-tooltip {
@@ -138,9 +135,8 @@ button {
 .card {
     border: 1px solid rgba(0,0,0,0.4);
     margin: 1%;
-    width: 17%;
     display: flex;
-    flex-basis: 30%;
+    flex-basis: 21%;
     transition: all 50ms linear;
 
 }
@@ -159,11 +155,7 @@ button {
 	justify-content: center;
 	align-items: center;
 	flex-direction: column;
-	position: absolute;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
+    width: 100%
 }
 
 .symbol {
@@ -178,11 +170,7 @@ button {
 	padding-top: 100%;
 }
 .symbol > .content {
-	position: absolute;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
+
 }
 .symbol.circle {
   border-radius: 100%;
@@ -200,13 +188,13 @@ button {
 	background-color: rgba(32, 191, 85,.4);
 }
 .symbol.full.blue {
-	background-color: #00A6FF;/*rgba(0,0,255,1);*/
+	background-color: #00A6FF;
 }
 .symbol.full.red {
-	background-color: #FF366C;/*rgba(255,0,0,1);*/
+	background-color: #FF366C;
 }
 .symbol.full.green {
-	background-color: #20BF55;/*rgba(0,128,0,1);*/
+	background-color: #20BF55;
 }
 .symbol.blue {
   border-color: #00A6FF;
