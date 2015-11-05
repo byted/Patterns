@@ -289,8 +289,8 @@ io.on('connection', function(socket){
 			}));
 		}
 		else if(session.isSolution(solutionCids)) {
-			stats = session.turnEnd('good solution');
 			var newCards = session.drawCards(solutionCids);
+			stats = session.turnEnd('good solution');
 			//needs a check if this has worked!
 
 			socket.emit('solution_response',JSON.stringify({
