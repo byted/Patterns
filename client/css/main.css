@@ -1,18 +1,18 @@
 /* Animations */
 @keyframes show {
     from {
-        transform: scale(0);
+        opacity: 0;
     }
     to {
-        transform: scale(1);
+        opacity: 1;
     }
 }
 @keyframes hide {
     from {
-        transform: scale(1);
+        opacity: 1;
     }
     to {
-        transform: scale(0);
+        opacity: 0;
     }
 }
 .blendOut {
@@ -28,21 +28,22 @@
 }
 
 /*---*/
-@media screen and (min-aspect-ratio: 7/10) {
-    .card {
-        flex-basis: 17% !important;
+@media screen and (min-device-pixel-ratio: 3/2) {
+    body {
+        font-size: 1.5em;
     }
 }
-body {
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    font-size: 3em;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    overflow: hidden;
-    max-width: 1000px;
+
+* {
+    box-sizing: border-box;
 }
+body {
+    width: 100vmin;
+    margin: 0 auto;
+    overflow: hidden;
+    font-size: 1.5em;
+    font-family: sans-serif;
+    }
 label {
     margin-right: .2em;
 }
@@ -51,18 +52,26 @@ button {
     color: white;
     font-size: .7em;
     border:none;
+    width: 100%;
 }
-
+button > span {
+    font-size: 3em;
+}
+button, #stats {
+    opacity: 0;
+    transition: opacity 250ms ease-in-out;
+}
 #countdown {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    margin: 0 auto;
-    padding: 1em;
+    padding: 2vh;
+    font-size: 5vh;
     text-align: center;
     background-color: rgba(77, 77, 77, 0.89);
     color: white;
+    z-index: 255;
 }
 
 #goodAttempts > label {
@@ -78,13 +87,19 @@ button {
     flex-direction: row;
     justify-content: space-around;
     margin: 0 auto;
-    width: 100%;
+    max-height: 10vh;
 }
 #board { 
+    height: 90vh;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap:wrap;
     align-content: flex-start;
-    justify-content: center;
+}
+@media screen and (min-aspect-ratio: 7/10) {
+    body {
+        width: 70vh;
+        margin: auto;
+    }
 }
 #theMiddle {
 	width: 50vmin;
@@ -105,16 +120,18 @@ button {
 }
 #splashScreen .points {
     margin: 15px;
-    font-size: 3em;
+    font-size: 2em;
+}
+.points {
     color: #00A6FF;
 }
-#splashScreen .goodAttempts {
+.goodAttempts {
     color: #20BF55;
 }
-#splashScreen .badAttempts {
+.badAttempts {
     color: #FF366C;
 }
-#splashScreen .gameOver {
+.gameOver {
     margin-bottom: 1em;
 }
 
@@ -133,36 +150,34 @@ button {
 /*end*/
 
 .card {
-    border: 1px solid rgba(0,0,0,0.4);
-    margin: 1%;
     display: flex;
-    flex-basis: 21%;
-    transition: all 50ms linear;
-
+    justify-content: center;
+    align-content: center;
+    flex-basis: 25%;
+    height: 22vh;
+    padding: 5px;
 }
-.card:before {
-	content: "";
-	display: block;
-	padding-top: 150%;
-	}
-.card.selected {
-	border-color: black;
-	box-shadow: 0 0 2px;
+.card > .content.selected  {
+    transform: scale(0.8);
 }
 
 .card > .content {
+    border: 1px solid rgba(0,0,0,0.4);
 	display: flex;
-	justify-content: center;
+	justify-content: space-around;
 	align-items: center;
 	flex-direction: column;
-    width: 100%
+    width: 100%;
+    padding: 1vh 0;
+    transition: all 200ms ease-in-out;
 }
 
 .symbol {
-	border: 3px solid black;
-	position: relative;
-	margin: 5px;
-	width: 30%;
+    display: flex;
+    border: 2px solid black;
+    margin: 0 auto;
+    width: 5vh;
+    height: 5vh;
 }
 .symbol:before {
 	content: "";

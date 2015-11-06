@@ -19,7 +19,9 @@ $(function () {
 		try {
 			var data = JSON.parse(json);
 			location.hash = data.sid;
-			$('#stats').fadeIn();
+			setTimeout(function () {
+				$('#stats, #moreCards').css('opacity', '1');
+			}, 300);
 			renderBoardUpdate(null, data.board);
 			renderStatsUpdate(data.stats);
 			if(!welcomeBack) {
@@ -47,6 +49,7 @@ $(function () {
 				data.newCards.forEach(function (card) {
 					board[card.cid] = card;
 				});
+				$('#moreCards').removeClass('blendIn').addClass('blendOut');
 				renderBoardUpdate(null, data.newCards);
 				renderStatsUpdate(data.stats);
 			} else {
@@ -119,10 +122,8 @@ $(function () {
 	}
 
 	function buildCard(card, withoutContainer) {
-		var cardContainerEl = $('<div class="card blendOut" id="' + card.cid + '"></div>'),
-			cardContentEl = $('<div class="content"></div>');
-		
-		cardContainerEl.click(function (e) {
+		var cardContentEl = $('<div id="' + card.cid + '" class="content"></div>');
+		cardContentEl.click(function (e) {
 			if(!ourTurn) { askForTurn() }
 			$(this).toggleClass('selected');
 			checkAndSendSolution('.selected');
@@ -133,57 +134,49 @@ $(function () {
 			if(count > 0) { visible = true }
 			cardContentEl.prepend(buildSymbol(card, visible));
 		};
-		return withoutContainer ? cardContentEl : cardContainerEl.append(cardContentEl);
+		return cardContentEl
 	}
 
 	function buildSymbol(card, visible) {
 		var hidden = visible ? '': 'style="visibility: hidden"';
-		return '<div class="symbol '+ card.color +' '+ card.shape +' '+ card.fill +'" ' + hidden + '><div class="content"></div></div>';
+		return '<div class="symbol '+ card.color +' '+ card.shape +' '+ card.fill +'" ' + hidden + '></div>';
 	}
 
 	function renderBoardUpdate(oldCardsCids, newCards) {
+		function add(newCards) {
+			cardContainer = $('.card').filter(function() {
+				return !$(this).children().length;
+			});
+			for(var i = 0; i < newCards.length; i++) {
+				board[newCards[i].cid] = newCards[i];
+				$(cardContainer[i]).append(buildCard(newCards[i]))
+			}
+			$('.card > .content').addClass('blendIn');
+		}
+		function remove(cids, cb) {
+			var selector = [''].concat(cids).join(',#');
+			$(selector).removeClass('blendIn').addClass('blendOut');
+			setTimeout(function () {
+				$(selector).remove();
+				cb();
+			}, 250);
+		}
 		if(!oldCardsCids) {
-			//only add new ones
-			boardEl = $('#board');
-			newCards.forEach(function(card) {
-				board[card.cid] = card;
-				boardEl.append(buildCard(card));
-			});
-			$('.card').addClass('blendIn');
+			add(newCards);
 		} else if(newCards.length === 0) {
-			//only remove old ones
 			$('#moreCards').removeClass('blendOut').addClass('blendIn');
-			oldCardsCids.forEach(function (cid, i) {
-				var el = $('#' + cid);
-				el.removeClass('blendIn')
-					.addClass('blendOut');
-				setTimeout(function () {
-					el.remove();
-				}, 250);
-			});
+			remove(oldCardsCids);		
 		} else if(oldCardsCids.length === newCards.length) {
-			//update inplace
-			oldCardsCids.forEach(function (cid, i) {
-				var el = $('#' + cid);
-				el.removeClass('blendIn')
-					.addClass('blendOut');
-				setTimeout(function () {
-					el.attr('id', newCards[i].cid)
-						.empty()
-						.append(buildCard(newCards[i], true));
-					el.addClass('blendIn');
-				}, 250);
-					
-			});
+			remove(oldCardsCids, function() { add(newCards); });
 		}
 	}
 
 	function renderStatsUpdate(stats) {
-		if(stats.points) { $('#points > span').html(stats.points); }
-		if(stats.goodAttempts) { $('#goodAttempts > span').html(stats.goodAttempts); }
-		if(stats.badAttempts) { $('#badAttempts > span').html(stats.badAttempts); }
-		if(stats.cardsLeft) { $('#cardsLeft > span').html(stats.cardsLeft); }
-		if(stats.cardsLeft === 0) {
+		if(stats.points) { $('#points').html(stats.points); }
+		if(stats.goodAttempts) { $('#goodAttempts').html(stats.goodAttempts); }
+		if(stats.badAttempts) { $('#badAttempts').html(stats.badAttempts); }
+		if(stats.cardsLeft) { $('#cardsLeft').html(stats.cardsLeft); }
+		if(stats.cardsLeft === 63) {
 			$('#moreCards')
 				.removeClass('blendOut').addClass('blendIn')
 				.html('I\'m done')
@@ -213,14 +206,19 @@ $(function () {
 		clearInterval(timer);
 		$('#countdown').addClass('invisvible');
 		ourTurn = false;
-		$('.card.selected').removeClass('selected');
+		setTimeout(function () {
+			$('.content.selected').removeClass('selected');
+		}, 500);
+		
 	}
 
 	function checkAndSendSolution(selector) {
 		var selected = $(selector);
 		if(selected.length === 3) {
 			if(ourTurn) {
-				sendSolution([selected[0].id, selected[1].id, selected[2].id]);
+				setTimeout(function () {
+					sendSolution([selected[0].id, selected[1].id, selected[2].id]);
+				}, 200);
 			} else { console.log('Can not send. It is not our turn!'); }
 		}
 	}
