@@ -176,7 +176,7 @@ $(function () {
 		if(stats.goodAttempts) { $('#goodAttempts').html(stats.goodAttempts); }
 		if(stats.badAttempts) { $('#badAttempts').html(stats.badAttempts); }
 		if(stats.cardsLeft) { $('#cardsLeft').html(stats.cardsLeft); }
-		if(stats.cardsLeft === 63) {
+		if(stats.cardsLeft === 0) {
 			$('#moreCards')
 				.removeClass('blendOut').addClass('blendIn')
 				.html('I\'m done')
