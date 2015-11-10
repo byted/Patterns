@@ -172,51 +172,32 @@ button, #stats {
     transition: all 200ms ease-in-out;
 }
 
-.symbol {
-    display: flex;
-    border: 2px solid black;
-    margin: 0 auto;
-    width: 5vh;
-    height: 5vh;
+svg { width: 5vw; height: 5vh; }
+svg * { stroke-width: 3%; }
+svg circle {
+    r: 47%;
+    cx: 50%;
+    cy: 50%;
 }
-.symbol:before {
-	content: "";
-	display: block;
-	padding-top: 100%;
+svg rect {
+    width: 94% !important;
+    height: 94% !important;
+    x: 3%;
+    y: 3%;
 }
-.symbol > .content {
-
+svg polygon {}
+svg > .lines {
+    fill-opacity: .4;
+    stroke-opacity: 0;
 }
-.symbol.circle {
-  border-radius: 100%;
+svg > .full {
+    fill-opacity: 1;
+    stroke-opacity: 1;
 }
-.symbol.triangle {
-  border-radius: 30%;
+svg > .none {
+    fill-opacity: 0;
+    stroke-opacity: 1;
 }
-.symbol.lines.blue {
-	background-color: rgba(0, 166, 255,.4);
-}
-.symbol.lines.red {
-	background-color: rgba(255, 54, 108,.4);
-}
-.symbol.lines.green {
-	background-color: rgba(32, 191, 85,.4);
-}
-.symbol.full.blue {
-	background-color: #00A6FF;
-}
-.symbol.full.red {
-	background-color: #FF366C;
-}
-.symbol.full.green {
-	background-color: #20BF55;
-}
-.symbol.blue {
-  border-color: #00A6FF;
-}
-.symbol.red {
-  border-color: #FF366C;
-}
-.symbol.green {
-  border-color: #20BF55;
-}
+svg > .blue { fill: rgb(0, 166, 255); stroke: rgb(0, 166, 255); }
+svg > .red { fill: rgb(255, 54, 108); stroke: rgb(255, 54, 108); }
+svg > .green { fill: rgb(32, 191, 85); stroke: rgb(32, 191, 85); }

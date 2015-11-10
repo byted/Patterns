@@ -9,8 +9,6 @@ $(function () {
 		socket.emit('join', JSON.stringify({
 			sid: location.hash
 		}));
-	});
-
 	socket.on('invalid_session', function () {
 		showSplashScreen('Game not found.');
 	});
@@ -129,17 +127,18 @@ $(function () {
 			checkAndSendSolution('.selected');
 		});
 
-		for (var count = card.count, i = 2; i >= 0; i--, count--) {
-			var visible = false
-			if(count > 0) { visible = true }
-			cardContentEl.prepend(buildSymbol(card, visible));
+		for (var i = card.count; i > 0; i--) {
+			cardContentEl.prepend(buildSymbol(card, true));
 		};
 		return cardContentEl
 	}
 
 	function buildSymbol(card, visible) {
 		var hidden = visible ? '': 'style="visibility: hidden"';
-		return '<div class="symbol '+ card.color +' '+ card.shape +' '+ card.fill +'" ' + hidden + '></div>';
+
+		// //TODO remove when changed in backend
+		var s = card.shape === 'triangle' ? 'polygon' : card.shape === 'square' ? 'rect' : 'circle'; 
+		return '<svg viewBox="0 0 100 100"><'+s+' ' + (s === 'polygon' ? 'points="0,100  100,100  50,0"' : '') +'class="symbol '+card.color+' '+card.fill+'" '+hidden+'></circle></svg>';
 	}
 
 	function renderBoardUpdate(oldCardsCids, newCards) {
