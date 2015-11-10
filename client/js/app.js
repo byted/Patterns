@@ -9,6 +9,8 @@ $(function () {
 		socket.emit('join', JSON.stringify({
 			sid: location.hash
 		}));
+	});
+
 	socket.on('invalid_session', function () {
 		showSplashScreen('Game not found.');
 	});
@@ -128,6 +130,8 @@ $(function () {
 		});
 
 		for (var i = card.count; i > 0; i--) {
+			// var visible = false
+			// if(count > 0) { visible = true }
 			cardContentEl.prepend(buildSymbol(card, true));
 		};
 		return cardContentEl
