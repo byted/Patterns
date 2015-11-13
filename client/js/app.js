@@ -130,8 +130,6 @@ $(function () {
 		});
 
 		for (var i = card.count; i > 0; i--) {
-			// var visible = false
-			// if(count > 0) { visible = true }
 			cardContentEl.prepend(buildSymbol(card, true));
 		};
 		return cardContentEl
@@ -142,7 +140,7 @@ $(function () {
 
 		// //TODO remove when changed in backend
 		var s = card.shape === 'triangle' ? 'polygon' : card.shape === 'square' ? 'rect' : 'circle'; 
-		return '<svg viewBox="0 0 100 100"><'+s+' ' + (s === 'polygon' ? 'points="0,100  100,100  50,0"' : '') +'class="symbol '+card.color+' '+card.fill+'" '+hidden+'></circle></svg>';
+		return '<svg viewBox="0 0 100 100"><'+s+' ' + (s === 'polygon' ? 'points="5,95  95,95  50,5"' : '') +' fill="url(#diagonal-stripes)" class="symbol '+card.color+' '+card.fill+'" '+hidden+'></circle></svg>';
 	}
 
 	function renderBoardUpdate(oldCardsCids, newCards) {
