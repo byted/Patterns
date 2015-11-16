@@ -16,15 +16,15 @@
     }
 }
 .blendOut {
-	animation: hide .2s;
-	animation-fill-mode: both;
+    animation: hide .2s;
+    animation-fill-mode: both;
 }
 .blendIn {
-	animation:show .2s;
+    animation:show .2s;
     animation-fill-mode:both
 }
 .invisvible {
-	visibility: hidden;
+    visibility: hidden;
 }
 
 /*---*/
@@ -101,16 +101,22 @@ button, #stats {
         width: 70vh;
         margin: auto;
     }
+    #theMiddle {width: 70vh !important;}
 }
 #theMiddle {
-	width: 50vmin;
-	height: 10px;
-	z-index: -100;
+    width: 90%;
+    height: 10px;
+    z-index: -100;
+    position: absolute;
+    bottom: 23vh;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
 }
 #splashScreen {
     display: none;
-	max-width: 800px;
-	text-align: center;
+    max-width: 800px;
+    text-align: center;
 }
 #splashScreen a {
     position: fixed;
@@ -136,19 +142,16 @@ button, #stats {
     margin-bottom: 1em;
 }
 
-.centercenter {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	margin: auto;
-}
 /*Override*/
 .chardinjs-tooltip {
-	max-width: 400px;
+    max-width: 400px;
+    font-size: initial;
 }
-/*end*/
+.chardinjs-tooltiptext {
+    padding: 0 1em;
+}
+.chardinjs-tooltip.chardinjs-bottom:before {display: none;}
+.chardinjs-tooltip.chardinjs-bottom {margin: 0;}
 
 .card {
     display: flex;
@@ -165,10 +168,10 @@ button, #stats {
 .card > .content {
     border: 1px solid rgba(0,0,0,0.2);
     border-radius: 3px;
-	display: flex;
-	justify-content: space-around;
-	align-items: center;
-	flex-direction: column;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column;
     padding: .5vh 0;
     width: 100%;
     transition: all 200ms ease-in-out;
