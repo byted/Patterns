@@ -8,7 +8,7 @@ http.listen(process.env.PORT || 3000);
 
 // game logic
 var COLORS = ['red', 'blue', 'green'];
-var SHAPES = ['square', 'circle', 'triangle'];
+var SHAPES = ['polygon', 'rect', 'circle'];
 var FILLS = ['none', 'lines', 'full'];
 
 /**
