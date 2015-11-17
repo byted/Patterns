@@ -108,24 +108,22 @@ $(function () {
             localStorage.setItem('highscore', data.stats.points)
             spruch = !highscore ? 'Welcome! Keep playing to get better.' : 'Wow, you topped yourself. Have a cookie!'
         }
-        var content = '<div class="gameOver">'+spruch+'</div><span class="goodAttempts">'+ data.stats.goodAttempts + 
-        ' patterns</span> + <span class="badAttempts">' + data.stats.badAttempts + 
-        ' bad attempts =</span><div class="points">' + data.stats.points + ' Points</div>'
+        var content = `<div class="gameOver">${spruch}</div>
+            <span class="goodAttempts">${data.stats.goodAttempts} patterns</span> + 
+            <span class="badAttempts">${data.stats.badAttempts} bad attempts</span>=
+            <div class="points">${data.stats.points} Points</div>`
         showSplashScreen(content)
     })
 
     function showSplashScreen(content) {
-        $('#stats').fadeOut()
-        $('#board').fadeOut()
-        $('#splashScreen > div').html(content)
-        var sc = $('#splashScreen')
-        sc.css('margin-top', $('body').height())
-        sc.show()
-        sc.animate({marginTop: 50})
+        $('#stats, #board').slideUp(function () {
+            $('#splashScreen > div').html(content)
+            $('#splashScreen').fadeIn()  
+        })
     }
 
     function buildCard(card) {
-        var cardContentEl = $('<div id="' + card.cid + '" class="content"></div>')
+        var cardContentEl = $(`<div id="${card.cid}" class="content"></div>`)
         cardContentEl.click(function () {
             if(!ourTurn) { askForTurn() }
             $(this).toggleClass('selected')
@@ -139,9 +137,9 @@ $(function () {
     }
 
     function buildSymbol(card) {
-        var elementString = `
-        <svg viewBox="0 0 100 100"><${card.shape} ${card.shape === 'polygon' ? 'points="5,95  95,95  50,5"' : ''} fill="url(#diagonal-stripes)"} class="symbol ${card.color} ${card.fill}"></circle></svg>`
-        return elementString
+        return `<svg viewBox="0 0 100 100">
+            <${card.shape} ${card.shape === 'polygon' ? 'points="5,95  95,95  50,5"' : ''} fill="url(#diagonal-stripes)"} class="symbol ${card.color} ${card.fill}"></${card.shape}>
+        </svg>`
     }
 
     function renderBoardUpdate(oldCardsCids, newCards) {

@@ -117,6 +117,7 @@ button, #stats {
     display: none;
     max-width: 800px;
     text-align: center;
+    margin-top: 10vh;
 }
 #splashScreen a {
     position: fixed;
