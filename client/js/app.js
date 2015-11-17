@@ -27,7 +27,7 @@ $(function () {
             }, 300)
             renderBoardUpdate(null, data.board)
             renderStatsUpdate(data.stats)
-            if(/*!welcomeBack*/true) {
+            if(!welcomeBack) {
                 $('body').chardinJs('start')
                 localStorage.setItem('welcomeBack', 'hell yeah')
             }
