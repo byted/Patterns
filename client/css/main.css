@@ -92,6 +92,8 @@ button, #stats {
 }
 #board { 
     height: 90vh;
+    max-height: calc(100dvh - 10vh);
+    overflow-y: auto;
     display: flex;
     flex-wrap:wrap;
     align-content: flex-start;
