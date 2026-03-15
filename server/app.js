@@ -92,6 +92,8 @@ Deck.prototype.draw = function (count) {
 	return drawnCards
 }
 //Session
+var SESSION_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
+
 function Session() {
 	this.sid = '#' + guidGenerator('sid_');
 	this.status = 'active';
@@ -101,6 +103,7 @@ function Session() {
 	this.players = {};
 	this.turnTimeout = 3000;
 	this.timeout = null;
+	this.lastActivity = Date.now();
 
 	var that = this;
 	this.deck.draw(12).forEach(function (c) {
@@ -200,6 +203,17 @@ Session.prototype.turnEnd = function (reason) {
 
 var sessions = {};
 
+// Clean up sessions inactive for SESSION_TTL_MS
+setInterval(function() {
+	var now = Date.now();
+	Object.keys(sessions).forEach(function(sid) {
+		if(now - sessions[sid].lastActivity > SESSION_TTL_MS) {
+			console.log('Cleaning up inactive session:', sid);
+			delete sessions[sid];
+		}
+	});
+}, 15 * 60 * 1000); // check every 15 minutes
+
 io.on('connection', function(socket){
 	console.log('Client connected: ' + socket.id);
 
@@ -224,6 +238,7 @@ io.on('connection', function(socket){
 			session = sessions[data.sid];
 		}
 		
+		session.lastActivity = Date.now();
 		session.addPlayer(socket);
 		socket.join(session.sid);
 		console.log(socket.id, 'joined', session.sid);
