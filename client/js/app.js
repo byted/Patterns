@@ -185,7 +185,7 @@ $(function () {
         }
     }
 
-    function startTurn(milisecondsToGo) {
+    function startTurn(millisecondsToGo) {
         ourTurn = true
         // set timer
         var countEl = $('#countdown')
@@ -197,7 +197,7 @@ $(function () {
                 endTurn('countdown')
             }
         }, 100)
-        countEl.html(milisecondsToGo / 1000)
+        countEl.html(millisecondsToGo / 1000)
         countEl.removeClass('invisible')
     }
 
