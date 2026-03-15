@@ -198,13 +198,13 @@ $(function () {
             }
         }, 100)
         countEl.html(milisecondsToGo / 1000)
-        countEl.removeClass('invisvible')
+        countEl.removeClass('invisible')
     }
 
     function endTurn(reason) {
         console.log('End of turn: ' + reason)
         clearInterval(timer)
-        $('#countdown').addClass('invisvible')
+        $('#countdown').addClass('invisible')
         ourTurn = false
         setTimeout(function () {
             $('.content.selected').removeClass('selected')

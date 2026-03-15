@@ -23,7 +23,7 @@
     animation:show .2s;
     animation-fill-mode:both
 }
-.invisvible {
+.invisible {
     visibility: hidden;
 }
 
