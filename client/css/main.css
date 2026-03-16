@@ -215,3 +215,14 @@ svg pattern path { stroke-width: 2; }
     height: 10;
     fill: white;
 }*/
+/* ── Turn status indicator ─────────────────────────────── */
+#turnStatus {
+    text-align: center;
+    font-size: 0.9em;
+    height: 1.4em;
+    line-height: 1.4em;
+    font-weight: bold;
+    transition: opacity 0.2s;
+}
+#turnStatus.active  { color: #2ecc71; }
+#turnStatus.waiting { color: #f39c12; opacity: 0.8; }

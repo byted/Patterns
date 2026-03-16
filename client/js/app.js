@@ -131,7 +131,7 @@ $(function () {
     function buildCard(card) {
         var cardContentEl = $(`<div id="${card.cid}" class="content"></div>`)
         cardContentEl.click(function () {
-            if(!ourTurn) { askForTurn() }
+            if(!ourTurn) { askForTurn(); $('#turnStatus').text('Waiting for turn…').addClass('waiting').removeClass('active') }
             $(this).toggleClass('selected')
             checkAndSendSolution('.selected')
         })
@@ -193,6 +193,7 @@ $(function () {
 
     function startTurn(millisecondsToGo) {
         ourTurn = true
+        $('#turnStatus').text('Your turn!').addClass('active').removeClass('waiting')
         // set timer
         var countEl = $('#countdown')
         timer = setInterval(function(){
@@ -211,6 +212,7 @@ $(function () {
         console.log('End of turn: ' + reason)
         clearInterval(timer)
         $('#countdown').addClass('invisible')
+        $('#turnStatus').text('').removeClass('active waiting')
         ourTurn = false
         pendingSelection = null
         setTimeout(function () {
