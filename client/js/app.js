@@ -129,7 +129,6 @@ $(function () {
         var box = $('<div id="tutorialBox"></div>')
         box.html(
             '<button id="tutorialClose" aria-label="Close">&times;</button>' +
-            '<div class="tutorial-scroll">' +
             '<h2>How to play</h2>' +
             '<p>Find <strong>triplets</strong> where each property is <strong>all the same</strong> or <strong>all different</strong>:</p>' +
             '<ul>' +
@@ -140,7 +139,6 @@ $(function () {
             '</ul>' +
             '<p>Click any card to claim your turn, then select 2 more.</p>' +
             '<p>✓ +1 pt &nbsp; ✗ −3 pts (wrong or timeout)</p>' +
-            '</div>' +
             '<button id="tutorialDismiss">Got it</button>'
         )
         overlay.append(box)

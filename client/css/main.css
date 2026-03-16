@@ -57,14 +57,14 @@ button {
 button > span {
     font-size: 3em;
 }
-button, .stat-label {
+.stat-label {
     font-size: 0.6em;
     opacity: 0.75;
     display: inline;
     margin-right: 4px;
     font-family: sans-serif;
 }
-#stats {
+button:not(#tutorialDismiss):not(#tutorialClose), #stats {
     opacity: 0;
     transition: opacity 250ms ease-in-out;
 }
@@ -257,17 +257,9 @@ svg pattern path { stroke-width: 2; }
     max-width: 400px;
     width: 90%;
     max-height: 85vh;
-    position: relative;
-    display: flex;
-    flex-direction: column;
+    overflow-y: auto;
     line-height: 1.5;
     font-size: 0.88em;
-}
-#tutorialBox .tutorial-scroll {
-    overflow-y: auto;
-    flex: 1;
-    min-height: 0;
-    padding-right: 4px;
 }
 #tutorialBox h2 {
     margin: 0 0 12px;
