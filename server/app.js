@@ -147,11 +147,14 @@ Session.prototype.getNumberOfPlayers = function() {
 Session.prototype.updateScoreForActivePlayer = function(reason) {
 	var stats = this.players[this.activePlayer].stats;
 	if(reason === 'good solution') {
-		stats.points += 1;
+		stats.points += 3;
 		stats.goodAttempts += 1;
-	} else if (reason === 'bad solution' || reason === 'countdown') {
-		stats.points += -3;
-		stats.badAttempts += 1
+	} else if (reason === 'bad solution') {
+		stats.points -= 1;
+		stats.badAttempts += 1;
+	} else if (reason === 'countdown') {
+		// No point penalty for timeout — just track attempt
+		stats.badAttempts += 1;
 	}
 	stats.cardsLeft = this.deck.cards.length;
 	return stats
