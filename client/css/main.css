@@ -282,6 +282,19 @@ svg pattern path { stroke-width: 2; }
     border-radius: 20px;
     font-size: 0.85em;
     z-index: 200;
+/* ── Turn toast (visible to all players) ───────────────── */
+#turnToast {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30,30,30,0.88);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+    z-index: 300;
     pointer-events: none;
     white-space: nowrap;
 }

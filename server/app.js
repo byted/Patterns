@@ -296,6 +296,15 @@ io.on('connection', function(socket){
 			console.log(e);
 		}
 		socket.emit('solution_block_response', JSON.stringify(msg));
+		// Broadcast turn start so all players can show who has the turn + countdown
+		if(msg.success) {
+			var playerIds = Object.keys(session.players);
+			var playerNum = playerIds.indexOf(socket.id) + 1;
+			socket.broadcast.emit('turn_started', JSON.stringify({
+				playerNum: playerNum,
+				countdown: msg.countdown
+			}));
+		}
 	});
 
 	socket.on('more_cards', function(json) {

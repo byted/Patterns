@@ -101,9 +101,27 @@ $(function () {
         } catch(e) {console.log(e) }
     })
 
+    socket.on('turn_started', function(json) {
+        try {
+            var data = JSON.parse(json)
+            showTurnToast('Player ' + data.playerNum + '’s turn', data.countdown)
+            // Mirror countdown for observers
+            var obs = setInterval(function(){
+                var remaining = parseFloat($('#turnToastTimer').text())
+                if(remaining > 0.1) {
+                    $('#turnToastTimer').text((remaining - 0.1).toFixed(1))
+                } else {
+                    clearInterval(obs)
+                    dismissTurnToast()
+                }
+            }, 100)
+        } catch(e) { console.log(e) }
+    })
+
     socket.on('solution_found', function (json) {
         try { 
             var data = JSON.parse(json)
+            dismissTurnToast()
             //handle correct solution
             data.oldCardsCids.forEach(function (cid) {
                 delete board[cid]
@@ -178,6 +196,22 @@ $(function () {
             prompt('Share this link:', url)
         }
     })
+    var _turnToastEl = null
+
+    function showTurnToast(label, ms) {
+        dismissTurnToast()
+        var secs = (ms / 1000).toFixed(1)
+        _turnToastEl = $('<div id="turnToast"><span id="turnToastLabel"></span> <span id="turnToastTimer"></span>s</div>')
+        $('#turnToastLabel').length || true // label set below
+        _turnToastEl.find('#turnToastLabel').text(label)
+        _turnToastEl.find('#turnToastTimer').text(secs)
+        $('body').append(_turnToastEl)
+    }
+
+    function dismissTurnToast() {
+        if(_turnToastEl) { _turnToastEl.remove(); _turnToastEl = null }
+    }
+
     // ── Dev debug helpers ──────────────────────────────
     function clientIsValidSet(a, b, c) {
         var props = ['color', 'shape', 'fill', 'count'];
@@ -208,6 +242,7 @@ $(function () {
         board: function() { return board; }
     };
     console.log('[debug] debugPatterns.checkSets() — check valid sets on board');
+    console.log('[debug] debugPatterns.checkSets() to check for valid sets');
     // ─────────────────────────────────────────────────────
 
     function showSplashScreen(content) {
@@ -280,10 +315,11 @@ $(function () {
         var solo = millisecondsToGo >= 30000
         // set timer
         var countEl = $('#countdown')
+        showTurnToast('Your turn!', millisecondsToGo)
         timer = setInterval(function(){
-            var oldValue = parseFloat(countEl.html())
-            if(oldValue > 0.1) {
-                countEl.html((oldValue - 0.1).toFixed(1))
+            var remaining = parseFloat($('#turnToastTimer').text())
+            if(remaining > 0.1) {
+                $('#turnToastTimer').text((remaining - 0.1).toFixed(1))
             } else {
                 endTurn('countdown')
             }
@@ -295,13 +331,12 @@ $(function () {
     function endTurn(reason) {
         console.log('End of turn: ' + reason)
         clearInterval(timer)
-        $('#countdown').addClass('invisible')
+        dismissTurnToast()
         ourTurn = false
         pendingSelection = null
         setTimeout(function () {
             $('.content.selected').removeClass('selected')
         }, 500)
-
     }
 
     function checkAndSendSolution(selector) {
