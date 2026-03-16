@@ -164,8 +164,12 @@ button, #stats {
     height: 22vh;
     padding: 2px;
 }
-.card > .content.selected  {
-    transform: scale(0.8);
+.card > .content.selected {
+    transform: scale(0.88);
+    border-color: #00A6FF;
+    border-width: 2px;
+    box-shadow: 0 0 0 2px rgba(0, 166, 255, 0.35);
+    background-color: rgba(0, 166, 255, 0.07);
 }
 
 .card > .content {
