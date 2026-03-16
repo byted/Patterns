@@ -84,7 +84,10 @@ $(function () {
             } else {
                 reason = 'bad solution'
                 console.log(data.error)
-            // do some more UI stuff to give the user some feedback
+                // Flash red + shake on wrong answer
+                var wrongCards = $('.content.selected')
+                wrongCards.addClass('wrong')
+                setTimeout(function() { wrongCards.removeClass('wrong') }, 500)
             }
             renderStatsUpdate(data.stats)
             endTurn(reason)
