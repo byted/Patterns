@@ -7,6 +7,7 @@ $(function () {
     ,   board = {}
     ,   ourTurn = false
     ,   timer = null
+    ,   pendingSelection = null
 
     socket.on('welcome', function() {
         socket.emit('join', JSON.stringify({
@@ -39,6 +40,11 @@ $(function () {
             var data = JSON.parse(json)
             if(data.success) { 
                 startTurn(data.countdown)
+                // Send buffered selection if player had already picked 3 cards
+                if(pendingSelection) {
+                    sendSolution(pendingSelection)
+                    pendingSelection = null
+                }
             } else {
                 endTurn('alreadyBlocked')
             }
@@ -138,7 +144,7 @@ $(function () {
 
     function buildSymbol(card) {
         return `<svg viewBox="0 0 100 100">
-            <${card.shape} ${card.shape === 'polygon' ? 'points="5,95  95,95  50,5"' : ''} fill="url(#diagonal-stripes)"} class="symbol ${card.color} ${card.fill}"></${card.shape}>
+            <${card.shape} ${card.shape === 'polygon' ? 'points="5,95  95,95  50,5"' : ''} class="symbol ${card.color} ${card.fill}"></${card.shape}>
         </svg>`
     }
 
@@ -206,6 +212,7 @@ $(function () {
         clearInterval(timer)
         $('#countdown').addClass('invisible')
         ourTurn = false
+        pendingSelection = null
         setTimeout(function () {
             $('.content.selected').removeClass('selected')
         }, 500)
@@ -219,7 +226,10 @@ $(function () {
                 setTimeout(function () {
                     sendSolution([selected[0].id, selected[1].id, selected[2].id])
                 }, 200)
-            } else { console.log('Can not send. It is not our turn!') }
+            } else {
+                // Buffer the selection — will be sent once turn is granted
+                pendingSelection = [selected[0].id, selected[1].id, selected[2].id]
+            }
         }
     }
 
@@ -243,7 +253,7 @@ $(function () {
             socket.emit('more_cards', JSON.stringify({sid: location.hash}))
         } catch(e) { console.log(e) }
     })
-    $(window).unload(function() {
+    $(window).on('beforeunload', function() {
         socket.emit('leave', JSON.stringify({sid: location.hash}))
     })
 })
