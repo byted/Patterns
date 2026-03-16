@@ -153,6 +153,8 @@ $(function () {
         $('body').append(overlay)
         $('#tutorialDismiss, #tutorialClose').click(function() { overlay.remove() })
         overlay.click(function(e) { if(e.target === overlay[0]) overlay.remove() })
+    }
+
     function showNoSetMessage() {
         var msg = $('<div id="noSetToast">No valid set — 3 more cards dealt</div>')
         $('body').append(msg)
@@ -177,6 +179,37 @@ $(function () {
             prompt('Share this link:', url)
         }
     })
+    // ── Dev debug helpers ──────────────────────────────
+    function clientIsValidSet(a, b, c) {
+        var props = ['color', 'shape', 'fill', 'count'];
+        return props.every(function(p) {
+            var allSame = a[p] === b[p] && b[p] === c[p];
+            var allDiff = a[p] !== b[p] && b[p] !== c[p] && a[p] !== c[p];
+            return allSame || allDiff;
+        });
+    }
+    window.debugPatterns = {
+        checkSets: function() {
+            var cards = Object.keys(board).map(function(k){ return board[k] });
+            var found = [];
+            for(var i = 0; i < cards.length - 2; i++) {
+                for(var j = i+1; j < cards.length - 1; j++) {
+                    for(var k = j+1; k < cards.length; k++) {
+                        if(clientIsValidSet(cards[i], cards[j], cards[k])) {
+                            found.push([cards[i].cid, cards[j].cid, cards[k].cid]);
+                        }
+                    }
+                }
+            }
+            console.log('Board cards:', cards.length, '| Valid sets found:', found.length);
+            found.forEach(function(s, i) { console.log('  Set ' + (i+1) + ':', s.join(', ')) });
+            if(found.length === 0) console.warn('No valid sets! Auto-deal should trigger on next correct solution.');
+            return found;
+        },
+        board: function() { return board; }
+    };
+    console.log('[debug] debugPatterns.checkSets() — check valid sets on board');
+    // ─────────────────────────────────────────────────────
 
     function showSplashScreen(content) {
         $('#stats, #board').slideUp(function () {
