@@ -257,6 +257,7 @@ svg pattern path { stroke-width: 2; }
     max-width: 400px;
     width: 90%;
     max-height: 85vh;
+    position: relative;
     display: flex;
     flex-direction: column;
     line-height: 1.5;
@@ -291,3 +292,31 @@ svg pattern path { stroke-width: 2; }
     padding: 0;
 }
 #tutorialBox li { margin-bottom: 3px; }
+
+#tutorialClose {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.6em;
+    line-height: 1;
+    cursor: pointer;
+    color: #555;
+    padding: 2px 6px;
+}
+#tutorialClose:hover { color: #000; }
+
+#tutorialClose {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.6em;
+    line-height: 1;
+    cursor: pointer;
+    color: #555;
+    padding: 2px 6px;
+}
+#tutorialClose:hover { color: #000; }

@@ -128,6 +128,7 @@ $(function () {
         var overlay = $('<div id="tutorialOverlay"></div>')
         var box = $('<div id="tutorialBox"></div>')
         box.html(
+            '<button id="tutorialClose" aria-label="Close">&times;</button>' +
             '<div class="tutorial-scroll">' +
             '<h2>How to play</h2>' +
             '<p>Find <strong>triplets</strong> where each property is <strong>all the same</strong> or <strong>all different</strong>:</p>' +
@@ -144,7 +145,7 @@ $(function () {
         )
         overlay.append(box)
         $('body').append(overlay)
-        $('#tutorialDismiss').click(function() { overlay.remove() })
+        $('#tutorialDismiss, #tutorialClose').click(function() { overlay.remove() })
         overlay.click(function(e) { if(e.target === overlay[0]) overlay.remove() })
     }
 
