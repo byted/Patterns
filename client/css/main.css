@@ -57,7 +57,14 @@ button {
 button > span {
     font-size: 3em;
 }
-button, #stats {
+button, .stat-label {
+    font-size: 0.6em;
+    opacity: 0.75;
+    display: inline;
+    margin-right: 4px;
+    font-family: sans-serif;
+}
+#stats {
     opacity: 0;
     transition: opacity 250ms ease-in-out;
 }
