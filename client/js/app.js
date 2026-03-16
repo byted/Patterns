@@ -2,7 +2,7 @@ $(function () {
     'use strict'
     /* global io */
     /*eslint no-console: 0*/    
-    var welcomeBack = localStorage.getItem('welcomeBack')
+    var welcomeBack = localStorage.getItem('welcomeBack_' + location.hostname)
     ,   socket = io()
     ,   board = {}
     ,   ourTurn = false
@@ -30,7 +30,7 @@ $(function () {
             renderStatsUpdate(data.stats)
             if(!welcomeBack) {
                 showTutorial()
-                localStorage.setItem('welcomeBack', 'hell yeah')
+                localStorage.setItem('welcomeBack_' + location.hostname, 'hell yeah')
             }
         } catch(e) { console.log(e); throw e}
     })

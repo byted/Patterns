@@ -256,6 +256,8 @@ svg pattern path { stroke-width: 2; }
     padding: 24px 28px;
     max-width: 400px;
     width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
     line-height: 1.6;
     font-size: 0.9em;
 }
