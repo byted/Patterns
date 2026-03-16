@@ -253,13 +253,19 @@ svg pattern path { stroke-width: 2; }
 #tutorialBox {
     background: #fff;
     border-radius: 10px;
-    padding: 24px 28px;
+    padding: 20px 22px;
     max-width: 400px;
     width: 90%;
     max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.5;
+    font-size: 0.88em;
+}
+#tutorialBox .tutorial-scroll {
     overflow-y: auto;
-    line-height: 1.6;
-    font-size: 0.9em;
+    flex: 1;
+    padding-right: 4px;
 }
 #tutorialBox h2 {
     margin: 0 0 12px;
@@ -267,7 +273,8 @@ svg pattern path { stroke-width: 2; }
 }
 #tutorialBox p { margin: 0 0 10px; }
 #tutorialDismiss {
-    margin-top: 12px;
+    margin-top: 14px;
+    flex-shrink: 0;
     width: 100%;
     padding: 10px;
     background: #333;
@@ -278,3 +285,9 @@ svg pattern path { stroke-width: 2; }
     cursor: pointer;
 }
 #tutorialDismiss:hover { background: #555; }
+
+#tutorialBox ul {
+    margin: 6px 0 10px 18px;
+    padding: 0;
+}
+#tutorialBox li { margin-bottom: 3px; }
