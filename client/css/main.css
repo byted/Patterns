@@ -266,6 +266,7 @@ svg pattern path { stroke-width: 2; }
 #tutorialBox .tutorial-scroll {
     overflow-y: auto;
     flex: 1;
+    min-height: 0;
     padding-right: 4px;
 }
 #tutorialBox h2 {
