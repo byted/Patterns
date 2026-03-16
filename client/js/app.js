@@ -196,6 +196,7 @@ $(function () {
 
     function startTurn(millisecondsToGo) {
         ourTurn = true
+        var solo = millisecondsToGo >= 30000
         // set timer
         var countEl = $('#countdown')
         timer = setInterval(function(){
@@ -207,7 +208,7 @@ $(function () {
             }
         }, 100)
         countEl.html(millisecondsToGo / 1000)
-        countEl.removeClass('invisible')
+        if(!solo) { countEl.removeClass('invisible') }
     }
 
     function endTurn(reason) {

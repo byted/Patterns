@@ -255,22 +255,31 @@ io.on('connection', function(socket){
 		,	data = JSON.parse(json);
 		try {
 			session = sessions[data.sid];
+			var solo = session.getNumberOfPlayers() <= 1;
 			session.turnFor(socket.id);
-			session.timeout = setTimeout(function () {
-				var stats = session.turnEnd('countdown');
-				socket.emit('solution_response',JSON.stringify({
-					correct: false,
-					error: 'time_out',
-					stats: stats
-				}));
-			}, session.turnTimeout);
-			msg = { success: true, countdown: session.turnTimeout };
+			if(!solo) {
+				// Multiplayer: enforce turn timeout
+				session.timeout = setTimeout(function () {
+					var stats = session.turnEnd('countdown');
+					socket.emit('solution_response',JSON.stringify({
+						correct: false,
+						error: 'time_out',
+						stats: stats
+					}));
+				}, session.turnTimeout);
+			}
+			// Solo: no timeout — grant an extended window (30s) just to auto-release
+			else {
+				session.timeout = setTimeout(function () {
+					session.turnEnd('countdown');
+				}, 30000);
+			}
+			msg = { success: true, countdown: solo ? 30000 : session.turnTimeout };
 		} catch(e) {
 			msg = { success: false };
 			console.log(e);
 		}
 		socket.emit('solution_block_response', JSON.stringify(msg));
-		// for now, don't inform other players about the block
 	});
 
 	socket.on('more_cards', function(json) {
