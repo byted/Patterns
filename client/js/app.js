@@ -95,6 +95,9 @@ $(function () {
         try { 
             var data = JSON.parse(json)
             //handle correct solution
+            if(data.playerNum) {
+                showToast('Player ' + data.playerNum + ' found a set! (+3)')
+            }
             data.oldCardsCids.forEach(function (cid) {
                 delete board[cid]
             })
@@ -120,6 +123,12 @@ $(function () {
             <div class="points">${data.stats.points} Points</div>`
         showSplashScreen(content)
     })
+
+    function showToast(msg) {
+        var el = $('<div class="gameToast"></div>').text(msg)
+        $('body').append(el)
+        setTimeout(function() { el.fadeOut(400, function() { el.remove() }) }, 2500)
+    }
 
     function showSplashScreen(content) {
         $('#stats, #board').slideUp(function () {

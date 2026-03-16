@@ -215,3 +215,18 @@ svg pattern path { stroke-width: 2; }
     height: 10;
     fill: white;
 }*/
+/* ── Game toast (multiplayer events) ──────────────────── */
+.gameToast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    z-index: 200;
+    pointer-events: none;
+    white-space: nowrap;
+}

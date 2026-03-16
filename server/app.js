@@ -315,9 +315,14 @@ io.on('connection', function(socket){
 				stats: stats
 			}));
 
+			// Determine player number for display
+			var playerIds = Object.keys(session.players);
+			var playerNum = playerIds.indexOf(socket.id) + 1;
 			socket.broadcast.emit('solution_found', JSON.stringify({
 				oldCardsCids: solutionCids,
 				newCards: newCards,
+				playerNum: playerNum,
+				points: stats.points,
 			}));
 		}
 		else {
