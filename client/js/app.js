@@ -29,7 +29,7 @@ $(function () {
             renderBoardUpdate(null, data.board)
             renderStatsUpdate(data.stats)
             if(!welcomeBack) {
-                $('body').chardinJs('start')
+                showTutorial()
                 localStorage.setItem('welcomeBack', 'hell yeah')
             }
         } catch(e) { console.log(e); throw e}
@@ -123,6 +123,24 @@ $(function () {
             <div class="points">${data.stats.points} Points</div>`
         showSplashScreen(content)
     })
+
+    function showTutorial() {
+        var overlay = $('<div id="tutorialOverlay"></div>')
+        var box = $('<div id="tutorialBox"></div>')
+        box.html(
+            '<h2>How to play</h2>' +
+            '<p>Find <strong>triplets</strong> of cards where <strong>each property</strong> ' +
+            '(color, shape, fill, count) is either <strong>all the same</strong> or ' +
+            '<strong>all different</strong> across the three cards.</p>' +
+            '<p>Click a card to claim your turn, then select two more to submit your triplet.</p>' +
+            '<p>✓ Correct = +1 pt &nbsp;&nbsp; ✗ Wrong or timeout = −3 pts</p>' +
+            '<button id="tutorialDismiss">Got it</button>'
+        )
+        overlay.append(box)
+        $('body').append(overlay)
+        $('#tutorialDismiss').click(function() { overlay.remove() })
+        overlay.click(function(e) { if(e.target === overlay[0]) overlay.remove() })
+    }
 
     function showSplashScreen(content) {
         $('#stats, #board').slideUp(function () {
