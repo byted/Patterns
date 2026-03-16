@@ -10,6 +10,29 @@ http.listen(process.env.PORT || 3000);
 var COLORS = ['red', 'blue', 'green'];
 var SHAPES = ['polygon', 'rect', 'circle'];
 var FILLS = ['none', 'lines', 'full'];
+/**
+ * Check whether 3 cards form a valid set.
+ */
+function isValidSet(a, b, c) {
+    var props = ['color', 'shape', 'fill', 'count'];
+    return props.every(function(p) {
+        var allSame = a[p] === b[p] && b[p] === c[p];
+        var allDiff = a[p] !== b[p] && b[p] !== c[p] && a[p] !== c[p];
+        return allSame || allDiff;
+    });
+}
+
+function boardHasValidSet(boardCards) {
+    for (var i = 0; i < boardCards.length - 2; i++) {
+        for (var j = i + 1; j < boardCards.length - 1; j++) {
+            for (var k = j + 1; k < boardCards.length; k++) {
+                if (isValidSet(boardCards[i], boardCards[j], boardCards[k])) return true;
+            }
+        }
+    }
+    return false;
+}
+
 
 /**
  * Randomize array element order in-place.
@@ -317,16 +340,24 @@ io.on('connection', function(socket){
 			stats = session.turnEnd('good solution');
 			//needs a check if this has worked!
 
+			// Auto-deal if no valid set remains on board
+			var boardCards = Object.keys(session.board).map(function(k){ return session.board[k]; });
+			var autoDeal = null;
+			if(boardCards.length > 0 && !boardHasValidSet(boardCards) && session.deck.cards.length > 0) {
+				autoDeal = session.drawCards();
+			}
 			socket.emit('solution_response',JSON.stringify({
 				correct: true,
 				oldCardsCids: solutionCids,
 				newCards: newCards,
+				autoDeal: autoDeal,
 				stats: stats
 			}));
 
 			socket.broadcast.emit('solution_found', JSON.stringify({
 				oldCardsCids: solutionCids,
 				newCards: newCards,
+				autoDeal: autoDeal,
 			}));
 		}
 		else {

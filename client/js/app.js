@@ -81,6 +81,14 @@ $(function () {
                     board[card.cid] = card
                 })
                 renderBoardUpdate(data.oldCardsCids, data.newCards)
+                // Auto-deal: server detected no valid set and dealt 3 more cards
+                if(data.autoDeal && data.autoDeal.length > 0) {
+                    data.autoDeal.forEach(function (card) { board[card.cid] = card })
+                    setTimeout(function() {
+                        renderBoardUpdate(null, data.autoDeal)
+                    }, 600)
+                    showNoSetMessage()
+                }
             } else {
                 reason = 'bad solution'
                 console.log(data.error)
@@ -145,6 +153,10 @@ $(function () {
         $('body').append(overlay)
         $('#tutorialDismiss, #tutorialClose').click(function() { overlay.remove() })
         overlay.click(function(e) { if(e.target === overlay[0]) overlay.remove() })
+    function showNoSetMessage() {
+        var msg = $('<div id="noSetToast">No valid set — 3 more cards dealt</div>')
+        $('body').append(msg)
+        setTimeout(function() { msg.fadeOut(400, function() { msg.remove() }) }, 2500)
     }
 
     function showToast(msg) {
