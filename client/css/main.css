@@ -238,6 +238,8 @@ svg pattern path { stroke-width: 2; }
     border-color: #FF366C !important;
     background-color: rgba(255, 54, 108, 0.1);
     animation: shake 0.4s ease-in-out;
+}
+
 /* ── No-set auto-deal toast ────────────────────────────── */
 #noSetToast {
     position: fixed;
@@ -282,6 +284,8 @@ svg pattern path { stroke-width: 2; }
     border-radius: 20px;
     font-size: 0.85em;
     z-index: 200;
+}
+
 /* ── Turn toast (visible to all players) ───────────────── */
 #turnToast {
     position: fixed;
