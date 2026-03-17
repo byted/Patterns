@@ -2,7 +2,7 @@ $(function () {
     'use strict'
     /* global io */
     /*eslint no-console: 0*/    
-    var welcomeBack = localStorage.getItem('welcomeBack')
+    var welcomeBack = localStorage.getItem('welcomeBack_' + location.hostname)
     ,   socket = io()
     ,   board = {}
     ,   ourTurn = false
@@ -29,8 +29,8 @@ $(function () {
             renderBoardUpdate(null, data.board)
             renderStatsUpdate(data.stats)
             if(!welcomeBack) {
-                $('body').chardinJs('start')
-                localStorage.setItem('welcomeBack', 'hell yeah')
+                showTutorial()
+                localStorage.setItem('welcomeBack_' + location.hostname, 'hell yeah')
             }
         } catch(e) { console.log(e); throw e}
     })
@@ -123,6 +123,29 @@ $(function () {
             <div class="points">${data.stats.points} Points</div>`
         showSplashScreen(content)
     })
+
+    function showTutorial() {
+        var overlay = $('<div id="tutorialOverlay"></div>')
+        var box = $('<div id="tutorialBox"></div>')
+        box.html(
+            '<button id="tutorialClose" aria-label="Close">&times;</button>' +
+            '<h2>How to play</h2>' +
+            '<p>Find <strong>triplets</strong> where each property is <strong>all the same</strong> or <strong>all different</strong>:</p>' +
+            '<ul>' +
+            '<li><strong>Color</strong> — red, blue, green</li>' +
+            '<li><strong>Shape</strong> — circle, square, triangle</li>' +
+            '<li><strong>Fill</strong> — empty, striped, solid</li>' +
+            '<li><strong>Count</strong> — 1, 2, 3</li>' +
+            '</ul>' +
+            '<p>Click any card to claim your turn, then select 2 more.</p>' +
+            '<p>✓ +1 pt &nbsp; ✗ −3 pts (wrong or timeout)</p>' +
+            '<button id="tutorialDismiss">Got it</button>'
+        )
+        overlay.append(box)
+        $('body').append(overlay)
+        $('#tutorialDismiss, #tutorialClose').click(function() { overlay.remove() })
+        overlay.click(function(e) { if(e.target === overlay[0]) overlay.remove() })
+    }
 
     function showSplashScreen(content) {
         $('#stats, #board').slideUp(function () {
