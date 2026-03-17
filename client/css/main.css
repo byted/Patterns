@@ -64,7 +64,7 @@ button > span {
     margin-right: 4px;
     font-family: sans-serif;
 }
-button:not(#tutorialDismiss):not(#tutorialClose), #stats {
+#moreCards, #stats {
     opacity: 0;
     transition: opacity 250ms ease-in-out;
 }
