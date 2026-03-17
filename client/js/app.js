@@ -312,9 +312,6 @@ $(function () {
 
     function startTurn(millisecondsToGo) {
         ourTurn = true
-        var solo = millisecondsToGo >= 30000
-        // set timer
-        var countEl = $('#countdown')
         showTurnToast('Your turn!', millisecondsToGo)
         timer = setInterval(function(){
             var remaining = parseFloat($('#turnToastTimer').text())
@@ -324,8 +321,6 @@ $(function () {
                 endTurn('countdown')
             }
         }, 100)
-        countEl.html(millisecondsToGo / 1000)
-        if(!solo) { countEl.removeClass('invisible') }
     }
 
     function endTurn(reason) {
