@@ -372,6 +372,53 @@ $(function () {
         } catch(e) { console.log('Couldn\'t send request for solution block') }
     }
 
+
+    // ── Save / Load session ─────────────────────────────
+    var SAVE_KEY = 'patterns_saved_session'
+
+    function saveSession() {
+        try {
+            var payload = {
+                v: 1,
+                ts: Date.now(),
+                board: board,
+                stats: {
+                    points: parseInt($('#goodAttempts').closest('.points').prev('.points').find('span:not(.stat-label)').text()) || 0,
+                    cardsLeft: parseInt($('#cardsLeft').text()) || 0
+                }
+            }
+            var encoded = btoa(JSON.stringify(payload))
+            localStorage.setItem(SAVE_KEY, encoded)
+            showToast('Session saved! 💾')
+        } catch(e) {
+            showToast('Save failed: ' + e.message)
+        }
+    }
+
+    function loadSession() {
+        try {
+            var raw = localStorage.getItem(SAVE_KEY)
+            if(!raw) return null
+            return JSON.parse(atob(raw))
+        } catch(e) {
+            return null
+        }
+    }
+
+    $('#saveGame').click(function() { saveSession() })
+
+    // Offer to restore on page load
+    var saved = loadSession()
+    if(saved && saved.board) {
+        var age = Math.round((Date.now() - saved.ts) / 60000)
+        var ageStr = age < 60 ? age + ' min ago' : Math.round(age/60) + 'h ago'
+        if(confirm('Restore saved session from ' + ageStr + '?')) {
+            board = saved.board
+            renderBoardUpdate([], Object.values(board))
+            showToast('Session restored! ♻️')
+        }
+    }
+
     $(window).on('beforeunload', function() {
         socket.emit('leave', JSON.stringify({sid: location.hash}))
     })
