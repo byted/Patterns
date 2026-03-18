@@ -369,6 +369,8 @@ io.on('connection', function(socket){
 				error: 'just_wrong',
 				stats: stats
 			}));
+			// Notify other players to cancel their countdown
+			socket.broadcast.emit('turn_ended', JSON.stringify({ reason: 'wrong' }));
 		}
 	});
 

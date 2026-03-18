@@ -106,16 +106,20 @@ $(function () {
             var data = JSON.parse(json)
             showTurnToast('Player ' + data.playerNum + '’s turn', data.countdown)
             // Mirror countdown for observers
-            var obs = setInterval(function(){
+            _turnToastInterval = setInterval(function(){
                 var remaining = parseFloat($('#turnToastTimer').text())
                 if(remaining > 0.1) {
                     $('#turnToastTimer').text((remaining - 0.1).toFixed(1))
                 } else {
-                    clearInterval(obs)
+                    clearInterval(_turnToastInterval); _turnToastInterval = null
                     dismissTurnToast()
                 }
             }, 100)
         } catch(e) { console.log(e) }
+    })
+
+    socket.on('turn_ended', function() {
+        dismissTurnToast()
     })
 
     socket.on('solution_found', function (json) {
@@ -197,6 +201,7 @@ $(function () {
         }
     })
     var _turnToastEl = null
+    var _turnToastInterval = null
 
     function showTurnToast(label, ms) {
         dismissTurnToast()
@@ -209,6 +214,7 @@ $(function () {
     }
 
     function dismissTurnToast() {
+        if(_turnToastInterval) { clearInterval(_turnToastInterval); _turnToastInterval = null }
         if(_turnToastEl) { _turnToastEl.remove(); _turnToastEl = null }
     }
 
