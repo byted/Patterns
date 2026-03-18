@@ -6,6 +6,7 @@ $(function () {
     ,   socket = io()
     ,   board = {}
     ,   ourTurn = false
+    ,   otherPlayerHasTurn = false
     ,   timer = null
     ,   pendingSelection = null
 
@@ -40,6 +41,7 @@ $(function () {
         try{
             var data = JSON.parse(json)
             if(data.success) { 
+                otherPlayerHasTurn = false
                 startTurn(data.countdown)
                 // Send buffered selection if player had already picked 3 cards
                 if(pendingSelection) {
@@ -109,6 +111,7 @@ $(function () {
     socket.on('turn_started', function(json) {
         try {
             var data = JSON.parse(json)
+            otherPlayerHasTurn = true
             showTurnToast('Player ' + data.playerNum + '’s turn', data.countdown)
             // Mirror countdown for observers
             _turnToastInterval = setInterval(function(){
@@ -117,6 +120,7 @@ $(function () {
                     $('#turnToastTimer').text((remaining - 0.1).toFixed(1))
                 } else {
                     clearInterval(_turnToastInterval); _turnToastInterval = null
+                    otherPlayerHasTurn = false
                     dismissTurnToast()
                 }
             }, 100)
@@ -124,6 +128,7 @@ $(function () {
     })
 
     socket.on('turn_ended', function() {
+        otherPlayerHasTurn = false
         dismissTurnToast()
     })
 
@@ -132,12 +137,14 @@ $(function () {
     })
 
     socket.on('all_unblocked', function() {
+        otherPlayerHasTurn = false
         setPlayerBlocked(false)
     })
 
     socket.on('solution_found', function (json) {
         try { 
             var data = JSON.parse(json)
+            otherPlayerHasTurn = false
             dismissTurnToast()
             //handle correct solution
             data.oldCardsCids.forEach(function (cid) {
@@ -298,7 +305,7 @@ $(function () {
     function buildCard(card) {
         var cardContentEl = $(`<div id="${card.cid}" class="content"></div>`)
         cardContentEl.click(function () {
-            if(!ourTurn) { if(_playerBlocked) { return } askForTurn() }
+            if(!ourTurn) { if(_playerBlocked || otherPlayerHasTurn) { return } askForTurn() }
             $(this).toggleClass('selected')
             checkAndSendSolution('.selected')
         })
