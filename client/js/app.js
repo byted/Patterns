@@ -24,7 +24,7 @@ $(function () {
             var data = JSON.parse(json)
             location.hash = data.sid
             setTimeout(function () {
-                $('#stats, #moreCards').css('opacity', '1')
+                $('#stats').css('opacity', '1')
             }, 300)
             renderBoardUpdate(null, data.board)
             renderStatsUpdate(data.stats)
@@ -58,8 +58,7 @@ $(function () {
                 data.newCards.forEach(function (card) {
                     board[card.cid] = card
                 })
-                $('#moreCards').removeClass('blendIn').addClass('blendOut')
-                renderBoardUpdate(null, data.newCards)
+                    renderBoardUpdate(null, data.newCards)
                 renderStatsUpdate(data.stats)
             } else {
                 console.log('Board already full!')
@@ -260,7 +259,6 @@ $(function () {
         if(!oldCardsCids) {
             add(newCards)
         } else if(newCards.length === 0) {
-            $('#moreCards').removeClass('blendOut').addClass('blendIn')
             remove(oldCardsCids)		
         } else if(oldCardsCids.length === newCards.length) {
             remove(oldCardsCids, function() { add(newCards) })
@@ -273,11 +271,7 @@ $(function () {
         if(stats.badAttempts) { $('#badAttempts').html(stats.badAttempts) }
         if(stats.cardsLeft) { $('#cardsLeft').html(stats.cardsLeft) }
         if(stats.cardsLeft === 0) {
-            $('#moreCards')
-            .removeClass('blendOut').addClass('blendIn')
-            .html('I\'m done')
-            .off()
-            .click(function() { socket.emit('finished', JSON.stringify({sid: location.hash})) })
+            socket.emit('finished', JSON.stringify({sid: location.hash}))
         }
     }
 
@@ -339,11 +333,6 @@ $(function () {
         } catch(e) { console.log('Couldn\'t send request for solution block') }
     }
 
-    $('#moreCards').click(function() {
-        try {
-            socket.emit('more_cards', JSON.stringify({sid: location.hash}))
-        } catch(e) { console.log(e) }
-    })
     $(window).on('beforeunload', function() {
         socket.emit('leave', JSON.stringify({sid: location.hash}))
     })

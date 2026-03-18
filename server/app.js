@@ -184,26 +184,19 @@ Session.prototype.getStatsFor = function(pid) {
 	stats.cardsLeft = this.deck.cards.length;
 	return stats
 }
-Session.prototype.drawCards = function(cidsToDelete) {
-	var boardSize;
+Session.prototype.drawCards = function(cidsToDelete, count) {
 	var that = this;
+	count = count || 3;
 	if(cidsToDelete) {
-		cidsToDelete.forEach(function(cid) {
-			delete that.board[cid];
-		});
+		cidsToDelete.forEach(function(cid) { delete that.board[cid]; });
 	}
-	boardSize = Object.keys(this.board).length;
-	if(boardSize === 9 || (boardSize === 12 && !cidsToDelete)) {
-		var cards = this.deck.draw(3)
-		,	that = this;
-		cards.forEach(function(c) {
-			that.board[c.cid] = c;
-		});
-		return cards;
-	} else if(boardSize > 12) {
-		throw new Error('Board is already full');
+	var newCards = [];
+	for(var i = 0; i < count && that.deck.cards.length > 0; i++) {
+		var c = that.deck.cards.pop();
+		that.board[c.cid] = c;
+		newCards.push(c);
 	}
-	return []
+	return newCards;
 }
 Session.prototype.turnFor = function(pid) {
 	if(this.status !== 'active') {
@@ -344,7 +337,7 @@ io.on('connection', function(socket){
 			var boardCards = Object.keys(session.board).map(function(k){ return session.board[k]; });
 			var autoDeal = null;
 			if(boardCards.length > 0 && !boardHasValidSet(boardCards) && session.deck.cards.length > 0) {
-				autoDeal = session.drawCards();
+				autoDeal = session.drawCards(null, 4);
 			}
 			socket.emit('solution_response',JSON.stringify({
 				correct: true,
