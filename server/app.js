@@ -305,12 +305,28 @@ io.on('connection', function(socket){
 						error: 'time_out',
 						stats: stats
 					}));
+					// Notify others: countdown ended
+					socket.broadcast.emit('turn_ended', JSON.stringify({ reason: 'timeout' }));
+					// Notify blocked state
+					var everyoneUnblocked = !session.isBlocked(socket.id);
+					if(everyoneUnblocked) {
+						socket.emit('all_unblocked', '{}');
+						socket.broadcast.emit('all_unblocked', '{}');
+					} else {
+						socket.emit('you_are_blocked', '{}');
+					}
 				}, session.turnTimeout);
 			}
 			// Solo: no timeout — grant an extended window (30s) just to auto-release
 			else {
 				session.timeout = setTimeout(function () {
-					session.turnEnd('countdown');
+					var stats = session.turnEnd('countdown');
+					socket.emit('solution_response',JSON.stringify({
+						correct: false,
+						error: 'time_out',
+						stats: stats
+					}));
+					socket.emit('you_are_blocked', '{}');
 				}, 30000);
 			}
 			msg = { success: true, countdown: solo ? 30000 : session.turnTimeout };

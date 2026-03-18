@@ -98,10 +98,15 @@ $(function () {
             } else {
                 reason = 'bad solution'
                 console.log(data.error)
-                // Flash red + shake on wrong answer
-                var wrongCards = $('.content.selected')
-                wrongCards.addClass('wrong')
-                setTimeout(function() { wrongCards.removeClass('wrong') }, 500)
+                if(data.error === 'time_out') {
+                    // Countdown expired — show blocked banner immediately
+                    setPlayerBlocked(true)
+                } else {
+                    // Flash red + shake on wrong answer
+                    var wrongCards = $('.content.selected')
+                    wrongCards.addClass('wrong')
+                    setTimeout(function() { wrongCards.removeClass('wrong') }, 500)
+                }
             }
             renderStatsUpdate(data.stats)
             endTurn(reason)
