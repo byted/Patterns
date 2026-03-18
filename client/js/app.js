@@ -135,6 +135,9 @@ $(function () {
             })
             renderBoardUpdate(data.oldCardsCids, data.newCards)
             $('.card.selected').removeClass('selected')
+            if(data.stats && data.stats.cardsLeft !== undefined) {
+                $('#cardsLeft').html(data.stats.cardsLeft)
+            }
         } catch(e) {console.log(e) }
     })
 

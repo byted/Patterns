@@ -360,6 +360,7 @@ io.on('connection', function(socket){
 				oldCardsCids: solutionCids,
 				newCards: newCards,
 				autoDeal: autoDeal,
+				stats: { cardsLeft: session.deck.cards.length }
 			}));
 		}
 		else {
