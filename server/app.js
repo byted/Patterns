@@ -399,10 +399,16 @@ io.on('connection', function(socket){
 				error: 'just_wrong',
 				stats: stats
 			}));
-			// Notify other players: turn ended, and whether the solver is now blocked
-			socket.broadcast.emit('turn_ended', JSON.stringify({ reason: 'wrong', blockedPid: socket.id }));
-			// Tell the solver they are blocked
-			if(session.isBlocked(socket.id)) {
+			// Notify other players: turn ended
+			socket.broadcast.emit('turn_ended', JSON.stringify({ reason: 'wrong' }));
+			// Check if all players are now unblocked (everyone was wrong)
+			var everyoneUnblocked = !session.isBlocked(socket.id);
+			if(everyoneUnblocked) {
+				// All players were blocked and are now reset — notify everyone
+				socket.emit('all_unblocked', '{}');
+				socket.broadcast.emit('all_unblocked', '{}');
+			} else {
+				// Only this player is blocked
 				socket.emit('you_are_blocked', '{}');
 			}
 		}
