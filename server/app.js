@@ -127,6 +127,7 @@ function Session() {
 	this.turnTimeout = 3000;
 	this.timeout = null;
 	this.lastActivity = Date.now();
+	this.blockedPlayers = {}; // pids blocked after wrong answer
 
 	var that = this;
 	this.deck.draw(12).forEach(function (c) {
@@ -209,6 +210,9 @@ Session.prototype.turnFor = function(pid) {
 	if(this.status !== 'active') {
 		throw new Error('session already blocked');
 	}
+	if(this.blockedPlayers[pid]) {
+		throw new Error('player is blocked after wrong answer');
+	}
 	this.activePlayer = pid;
 	this.status = 'blocked';
 	console.log('Turn: ' + pid);
@@ -218,8 +222,20 @@ Session.prototype.turnEnd = function (reason) {
 	clearTimeout(this.timeout);
 	stats = this.updateScoreForActivePlayer(reason);
 	console.log('Turn end: ' + this.activePlayer + ' (' + reason + ')');
+	if(reason === 'bad solution' || reason === 'countdown') {
+		this.blockedPlayers[this.activePlayer] = true;
+		// If all players are now blocked, unblock everyone
+		var activePids = Object.keys(this.players);
+		var allBlocked = activePids.every(function(pid) { return this.blockedPlayers[pid]; }, this);
+		if(allBlocked) { this.blockedPlayers = {}; }
+	} else if(reason === 'good solution') {
+		this.blockedPlayers = {}; // unblock everyone on success
+	}
 	this.activePlayer = null;
 	return stats
+}
+Session.prototype.isBlocked = function(pid) {
+	return !!this.blockedPlayers[pid];
 }
 
 //--------
@@ -299,7 +315,8 @@ io.on('connection', function(socket){
 			}
 			msg = { success: true, countdown: solo ? 30000 : session.turnTimeout };
 		} catch(e) {
-			msg = { success: false };
+			var isBlocked = session && session.isBlocked && session.isBlocked(socket.id);
+			msg = { success: false, blocked: isBlocked };
 			console.log(e);
 		}
 		socket.emit('solution_block_response', JSON.stringify(msg));
@@ -365,6 +382,8 @@ io.on('connection', function(socket){
 				allPlayerStats: allStats
 			}));
 
+			// Unblock all players on success
+			socket.broadcast.emit('all_unblocked', '{}');
 			socket.broadcast.emit('solution_found', JSON.stringify({
 				oldCardsCids: solutionCids,
 				newCards: newCards,
@@ -380,8 +399,12 @@ io.on('connection', function(socket){
 				error: 'just_wrong',
 				stats: stats
 			}));
-			// Notify other players to cancel their countdown
-			socket.broadcast.emit('turn_ended', JSON.stringify({ reason: 'wrong' }));
+			// Notify other players: turn ended, and whether the solver is now blocked
+			socket.broadcast.emit('turn_ended', JSON.stringify({ reason: 'wrong', blockedPid: socket.id }));
+			// Tell the solver they are blocked
+			if(session.isBlocked(socket.id)) {
+				socket.emit('you_are_blocked', '{}');
+			}
 		}
 	});
 

@@ -392,3 +392,19 @@ svg pattern path { stroke-width: 2; }
     border-radius: 12px;
     padding: 3px 10px;
 }
+
+/* ── Blocked-after-wrong message ──────────────────────── */
+#blockedMsg {
+    position: fixed;
+    top: 12vh;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(220, 53, 69, 0.92);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    z-index: 300;
+    pointer-events: none;
+    text-align: center;
+}

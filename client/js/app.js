@@ -47,6 +47,9 @@ $(function () {
                     pendingSelection = null
                 }
             } else {
+                if(data.blocked) {
+                    setPlayerBlocked(true)
+                }
                 endTurn('alreadyBlocked')
             }
         } catch(e) {console.log(e)}
@@ -122,6 +125,14 @@ $(function () {
 
     socket.on('turn_ended', function() {
         dismissTurnToast()
+    })
+
+    socket.on('you_are_blocked', function() {
+        setPlayerBlocked(true)
+    })
+
+    socket.on('all_unblocked', function() {
+        setPlayerBlocked(false)
     })
 
     socket.on('solution_found', function (json) {
@@ -214,6 +225,18 @@ $(function () {
         $('#playerStats').html(html).show();
     }
 
+    var _playerBlocked = false
+    function setPlayerBlocked(blocked) {
+        _playerBlocked = blocked
+        if(blocked) {
+            if(!$('#blockedMsg').length) {
+                $('body').append('<div id="blockedMsg">❌ Wrong — wait for another player to find a set</div>')
+            }
+        } else {
+            $('#blockedMsg').remove()
+        }
+    }
+
     var _turnToastEl = null
     var _turnToastInterval = null
 
@@ -275,7 +298,7 @@ $(function () {
     function buildCard(card) {
         var cardContentEl = $(`<div id="${card.cid}" class="content"></div>`)
         cardContentEl.click(function () {
-            if(!ourTurn) { askForTurn() }
+            if(!ourTurn) { if(_playerBlocked) { return } askForTurn() }
             $(this).toggleClass('selected')
             checkAndSendSolution('.selected')
         })
