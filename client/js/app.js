@@ -28,6 +28,7 @@ $(function () {
             }, 300)
             renderBoardUpdate(null, data.board)
             renderStatsUpdate(data.stats)
+            renderPlayerStats(data.allPlayerStats)
             if(!welcomeBack) {
                 showTutorial()
                 localStorage.setItem('welcomeBack_' + location.hostname, 'hell yeah')
@@ -70,6 +71,7 @@ $(function () {
         try {
             var data = JSON.parse(json)
             if(data.correct) {
+                renderPlayerStats(data.allPlayerStats)
                 var reason = 'good solution'
                 //handle correct solution
                 console.log(data)
@@ -135,6 +137,7 @@ $(function () {
             })
             renderBoardUpdate(data.oldCardsCids, data.newCards)
             $('.card.selected').removeClass('selected')
+            renderPlayerStats(data.allPlayerStats)
             if(data.stats && data.stats.cardsLeft !== undefined) {
                 $('#cardsLeft').html(data.stats.cardsLeft)
             }
@@ -203,6 +206,14 @@ $(function () {
             prompt('Share this link:', url)
         }
     })
+    function renderPlayerStats(allStats) {
+        if(!allStats || allStats.length <= 1) { $('#playerStats').hide(); return; }
+        var html = allStats.map(function(p) {
+            return '<span class="pstat">P' + p.playerNum + ': <strong>' + p.points + '</strong>pt (' + p.goodAttempts + '✓ ' + p.badAttempts + '✗)</span>';
+        }).join('');
+        $('#playerStats').html(html).show();
+    }
+
     var _turnToastEl = null
     var _turnToastInterval = null
 

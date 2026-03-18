@@ -184,6 +184,13 @@ Session.prototype.getStatsFor = function(pid) {
 	stats.cardsLeft = this.deck.cards.length;
 	return stats
 }
+Session.prototype.getAllPlayerStats = function() {
+	var cardsLeft = this.deck.cards.length;
+	return Object.keys(this.players).map(function(pid, i) {
+		var s = this.players[pid].stats;
+		return { playerNum: i + 1, points: s.points, goodAttempts: s.goodAttempts, badAttempts: s.badAttempts, cardsLeft: cardsLeft };
+	}, this);
+}
 Session.prototype.drawCards = function(cidsToDelete, count) {
 	var that = this;
 	count = count || 3;
@@ -340,6 +347,7 @@ io.on('connection', function(socket){
 		else if(session.isSolution(solutionCids)) {
 			var newCards = session.drawCards(solutionCids);
 			stats = session.turnEnd('good solution');
+			var allStats = session.getAllPlayerStats();
 			//needs a check if this has worked!
 
 			// Auto-deal if no valid set remains on board
@@ -353,14 +361,16 @@ io.on('connection', function(socket){
 				oldCardsCids: solutionCids,
 				newCards: newCards,
 				autoDeal: autoDeal,
-				stats: stats
+				stats: stats,
+				allPlayerStats: allStats
 			}));
 
 			socket.broadcast.emit('solution_found', JSON.stringify({
 				oldCardsCids: solutionCids,
 				newCards: newCards,
 				autoDeal: autoDeal,
-				stats: { cardsLeft: session.deck.cards.length }
+				stats: { cardsLeft: session.deck.cards.length },
+				allPlayerStats: allStats
 			}));
 		}
 		else {
