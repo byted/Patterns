@@ -147,6 +147,25 @@ $(function () {
         overlay.click(function(e) { if(e.target === overlay[0]) overlay.remove() })
     }
 
+    function showToast(msg) {
+        var el = $('<div class="gameToast"></div>').text(msg)
+        $('body').append(el)
+        setTimeout(function() { el.fadeOut(400, function() { el.remove() }) }, 2500)
+    }
+
+    $('#shareGame').click(function() {
+        var url = location.href
+        if(navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(function() {
+                showToast('Link copied!')
+            }).catch(function() {
+                prompt('Share this link:', url)
+            })
+        } else {
+            prompt('Share this link:', url)
+        }
+    })
+
     function showSplashScreen(content) {
         $('#stats, #board').slideUp(function () {
             $('#splashScreen > div').html(content)

@@ -64,7 +64,7 @@ button > span {
     margin-right: 4px;
     font-family: sans-serif;
 }
-button:not(#tutorialDismiss):not(#tutorialClose), #stats {
+#moreCards, #stats {
     opacity: 0;
     transition: opacity 250ms ease-in-out;
 }
@@ -238,6 +238,39 @@ svg pattern path { stroke-width: 2; }
     border-color: #FF366C !important;
     background-color: rgba(255, 54, 108, 0.1);
     animation: shake 0.4s ease-in-out;
+}
+
+/* ── Share button + toast ──────────────────────────────── */
+#shareGame {
+    position: fixed;
+    width: auto;
+    color: #333;
+    bottom: 16px;
+    right: 16px;
+    font-size: 0.85em;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    padding: 7px 14px;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+#shareGame:hover { background: #fff; }
+
+.gameToast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    z-index: 200;
+    pointer-events: none;
+    white-space: nowrap;
 }
 
 /* ── Tutorial overlay ──────────────────────────────────── */
