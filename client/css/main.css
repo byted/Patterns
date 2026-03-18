@@ -64,7 +64,7 @@ button > span {
     margin-right: 4px;
     font-family: sans-serif;
 }
-#moreCards, #stats {
+#stats {
     opacity: 0;
     transition: opacity 250ms ease-in-out;
 }
@@ -238,6 +238,19 @@ svg pattern path { stroke-width: 2; }
     border-color: #FF366C !important;
     background-color: rgba(255, 54, 108, 0.1);
     animation: shake 0.4s ease-in-out;
+/* ── No-set auto-deal toast ────────────────────────────── */
+#noSetToast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    z-index: 200;
+    pointer-events: none;
 }
 
 /* ── Share button + toast ──────────────────────────────── */

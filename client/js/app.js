@@ -24,7 +24,7 @@ $(function () {
             var data = JSON.parse(json)
             location.hash = data.sid
             setTimeout(function () {
-                $('#stats, #moreCards').css('opacity', '1')
+                $('#stats').css('opacity', '1')
             }, 300)
             renderBoardUpdate(null, data.board)
             renderStatsUpdate(data.stats)
@@ -58,8 +58,7 @@ $(function () {
                 data.newCards.forEach(function (card) {
                     board[card.cid] = card
                 })
-                $('#moreCards').removeClass('blendIn').addClass('blendOut')
-                renderBoardUpdate(null, data.newCards)
+                    renderBoardUpdate(null, data.newCards)
                 renderStatsUpdate(data.stats)
             } else {
                 console.log('Board already full!')
@@ -81,6 +80,14 @@ $(function () {
                     board[card.cid] = card
                 })
                 renderBoardUpdate(data.oldCardsCids, data.newCards)
+                // Auto-deal: server detected no valid set and dealt 3 more cards
+                if(data.autoDeal && data.autoDeal.length > 0) {
+                    data.autoDeal.forEach(function (card) { board[card.cid] = card })
+                    setTimeout(function() {
+                        renderBoardUpdate(null, data.autoDeal)
+                    }, 600)
+                    showNoSetMessage()
+                }
             } else {
                 reason = 'bad solution'
                 console.log(data.error)
@@ -147,6 +154,12 @@ $(function () {
         overlay.click(function(e) { if(e.target === overlay[0]) overlay.remove() })
     }
 
+    function showNoSetMessage() {
+        var msg = $('<div id="noSetToast">No valid set — 3 more cards dealt</div>')
+        $('body').append(msg)
+        setTimeout(function() { msg.fadeOut(400, function() { msg.remove() }) }, 2500)
+    }
+
     function showToast(msg) {
         var el = $('<div class="gameToast"></div>').text(msg)
         $('body').append(el)
@@ -165,6 +178,37 @@ $(function () {
             prompt('Share this link:', url)
         }
     })
+    // ── Dev debug helpers ──────────────────────────────
+    function clientIsValidSet(a, b, c) {
+        var props = ['color', 'shape', 'fill', 'count'];
+        return props.every(function(p) {
+            var allSame = a[p] === b[p] && b[p] === c[p];
+            var allDiff = a[p] !== b[p] && b[p] !== c[p] && a[p] !== c[p];
+            return allSame || allDiff;
+        });
+    }
+    window.debugPatterns = {
+        checkSets: function() {
+            var cards = Object.keys(board).map(function(k){ return board[k] });
+            var found = [];
+            for(var i = 0; i < cards.length - 2; i++) {
+                for(var j = i+1; j < cards.length - 1; j++) {
+                    for(var k = j+1; k < cards.length; k++) {
+                        if(clientIsValidSet(cards[i], cards[j], cards[k])) {
+                            found.push([cards[i].cid, cards[j].cid, cards[k].cid]);
+                        }
+                    }
+                }
+            }
+            console.log('Board cards:', cards.length, '| Valid sets found:', found.length);
+            found.forEach(function(s, i) { console.log('  Set ' + (i+1) + ':', s.join(', ')) });
+            if(found.length === 0) console.warn('No valid sets! Auto-deal should trigger on next correct solution.');
+            return found;
+        },
+        board: function() { return board; }
+    };
+    console.log('[debug] debugPatterns.checkSets() — check valid sets on board');
+    // ─────────────────────────────────────────────────────
 
     function showSplashScreen(content) {
         $('#stats, #board').slideUp(function () {
@@ -215,7 +259,6 @@ $(function () {
         if(!oldCardsCids) {
             add(newCards)
         } else if(newCards.length === 0) {
-            $('#moreCards').removeClass('blendOut').addClass('blendIn')
             remove(oldCardsCids)		
         } else if(oldCardsCids.length === newCards.length) {
             remove(oldCardsCids, function() { add(newCards) })
@@ -228,11 +271,7 @@ $(function () {
         if(stats.badAttempts) { $('#badAttempts').html(stats.badAttempts) }
         if(stats.cardsLeft) { $('#cardsLeft').html(stats.cardsLeft) }
         if(stats.cardsLeft === 0) {
-            $('#moreCards')
-            .removeClass('blendOut').addClass('blendIn')
-            .html('I\'m done')
-            .off()
-            .click(function() { socket.emit('finished', JSON.stringify({sid: location.hash})) })
+            socket.emit('finished', JSON.stringify({sid: location.hash}))
         }
     }
 
@@ -294,11 +333,6 @@ $(function () {
         } catch(e) { console.log('Couldn\'t send request for solution block') }
     }
 
-    $('#moreCards').click(function() {
-        try {
-            socket.emit('more_cards', JSON.stringify({sid: location.hash}))
-        } catch(e) { console.log(e) }
-    })
     $(window).on('beforeunload', function() {
         socket.emit('leave', JSON.stringify({sid: location.hash}))
     })
