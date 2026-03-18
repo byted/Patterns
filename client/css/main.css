@@ -376,3 +376,19 @@ svg pattern path { stroke-width: 2; }
     padding: 2px 6px;
 }
 #tutorialClose:hover { color: #000; }
+
+/* ── Player stats bar (multiplayer) ───────────────────── */
+#playerStats {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 6px 12px;
+    font-size: 0.8em;
+    color: #555;
+}
+#playerStats .pstat {
+    background: #f0f0f0;
+    border-radius: 12px;
+    padding: 3px 10px;
+}
