@@ -6,6 +6,7 @@ $(function () {
     ,   socket = io()
     ,   board = {}
     ,   ourTurn = false
+    ,   otherPlayerHasTurn = false
     ,   timer = null
     ,   pendingSelection = null
 
@@ -40,6 +41,7 @@ $(function () {
         try{
             var data = JSON.parse(json)
             if(data.success) { 
+                otherPlayerHasTurn = false
                 startTurn(data.countdown)
                 // Send buffered selection if player had already picked 3 cards
                 if(pendingSelection) {
@@ -47,6 +49,9 @@ $(function () {
                     pendingSelection = null
                 }
             } else {
+                if(data.blocked) {
+                    setPlayerBlocked(true)
+                }
                 endTurn('alreadyBlocked')
             }
         } catch(e) {console.log(e)}
@@ -93,10 +98,15 @@ $(function () {
             } else {
                 reason = 'bad solution'
                 console.log(data.error)
-                // Flash red + shake on wrong answer
-                var wrongCards = $('.content.selected')
-                wrongCards.addClass('wrong')
-                setTimeout(function() { wrongCards.removeClass('wrong') }, 500)
+                if(data.error === 'time_out') {
+                    // Countdown expired — show blocked banner immediately
+                    setPlayerBlocked(true)
+                } else {
+                    // Flash red + shake on wrong answer
+                    var wrongCards = $('.content.selected')
+                    wrongCards.addClass('wrong')
+                    setTimeout(function() { wrongCards.removeClass('wrong') }, 500)
+                }
             }
             renderStatsUpdate(data.stats)
             endTurn(reason)
@@ -106,6 +116,7 @@ $(function () {
     socket.on('turn_started', function(json) {
         try {
             var data = JSON.parse(json)
+            otherPlayerHasTurn = true
             showTurnToast('Player ' + data.playerNum + '’s turn', data.countdown)
             // Mirror countdown for observers
             _turnToastInterval = setInterval(function(){
@@ -114,6 +125,7 @@ $(function () {
                     $('#turnToastTimer').text((remaining - 0.1).toFixed(1))
                 } else {
                     clearInterval(_turnToastInterval); _turnToastInterval = null
+                    otherPlayerHasTurn = false
                     dismissTurnToast()
                 }
             }, 100)
@@ -121,12 +133,23 @@ $(function () {
     })
 
     socket.on('turn_ended', function() {
+        otherPlayerHasTurn = false
         dismissTurnToast()
+    })
+
+    socket.on('you_are_blocked', function() {
+        setPlayerBlocked(true)
+    })
+
+    socket.on('all_unblocked', function() {
+        otherPlayerHasTurn = false
+        setPlayerBlocked(false)
     })
 
     socket.on('solution_found', function (json) {
         try { 
             var data = JSON.parse(json)
+            otherPlayerHasTurn = false
             dismissTurnToast()
             //handle correct solution
             data.oldCardsCids.forEach(function (cid) {
@@ -214,6 +237,18 @@ $(function () {
         $('#playerStats').html(html).show();
     }
 
+    var _playerBlocked = false
+    function setPlayerBlocked(blocked) {
+        _playerBlocked = blocked
+        if(blocked) {
+            if(!$('#blockedMsg').length) {
+                $('body').append('<div id="blockedMsg">❌ Wrong — wait for another player to find a set</div>')
+            }
+        } else {
+            $('#blockedMsg').remove()
+        }
+    }
+
     var _turnToastEl = null
     var _turnToastInterval = null
 
@@ -275,7 +310,7 @@ $(function () {
     function buildCard(card) {
         var cardContentEl = $(`<div id="${card.cid}" class="content"></div>`)
         cardContentEl.click(function () {
-            if(!ourTurn) { askForTurn() }
+            if(!ourTurn) { if(_playerBlocked || otherPlayerHasTurn) { return } askForTurn() }
             $(this).toggleClass('selected')
             checkAndSendSolution('.selected')
         })
